@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8#y-c$-&8qs##0o#l(q+(9@8##pcb4l=k^wsn3ep@*cpkcnd3_'
+SECRET_KEY = config('DJANGO_SECRET_KEY')
+# SECRET_KEY = 'django-insecure-8#y-c$-&8qs##0o#l(q+(9@8##pcb4l=k^wsn3ep@*cpkcnd3_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
+# Allowed hosts configuration
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 # Application definition
 
@@ -123,14 +126,20 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom Configurations
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'travel_smart',
+#         'USER': 'travelsmart',
+#         'PASSWORD': 'travelsmart',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
+# Database configuration using dj-database-url
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'travel_smart',
-        'USER': 'travelsmart',
-        'PASSWORD': 'travelsmart',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL')
+    )
 }
