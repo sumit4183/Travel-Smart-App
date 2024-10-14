@@ -15,19 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from django.http import HttpResponse
-from django.views.decorators.http import require_http_methods
-
-@require_http_methods(["POST"])
-def my_view(request):
-    if request.method == 'POST':
-        my_data = request.POST.get('my_key', None)
-        return HttpResponse('Received POST request with data: {}'.format(my_data))
-    else:
-        return HttpResponse('This view only accepts POST requests.', status=405)
+from django.urls import path
 
 urlpatterns = [
-    path('accounts/', include('password_recovery')),
     path('admin/', admin.site.urls),
 ]

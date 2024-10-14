@@ -1,0 +1,46 @@
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_email(email):
+    sender_email = "travelSmart@gmail.com"
+    sender_password = "wifr ihyb ufly haib"
+
+    # Create  email object and initialize the data
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Password Reset Request"
+    message["From"] = sender_email
+    message["To"] = email
+
+    text = f"Follow the link to reset your password:\nhttp://localhost:8000/api/linkReset?email={email}"
+    # HTML content of email
+    html = f"""\
+    <html>
+      <body>
+        <p>This is an example email body.</p>
+        <p><a href="http://localhost:8000/api/linkReset?email={email}">Click here to reset your password</a></p>
+      </body>
+    </html>
+    """
+
+    # Add plain text and HTML to the email
+    part1 = MIMEText(text, "plain")
+    part2 = MIMEText(html, "html")
+    message.attach(part1)
+    message.attach(part2)
+
+
+    # Sending email
+    try:
+        # Create secure connection to SMTP server
+        # timeout after 1 hour
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout = 3600) as server:
+            # Log in to the email server
+            server.login(sender_email, sender_password)
+            # Send the email
+            server.sendmail(sender_email, email, message.as_string())
+    except Exception as e:
+        print(f"Error: {e}")
+        return "Failed to send email"
+    else:
+        return "Email sent successfully."
