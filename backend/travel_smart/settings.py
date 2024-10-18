@@ -23,7 +23,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY')
-# SECRET_KEY = 'django-insecure-8#y-c$-&8qs##0o#l(q+(9@8##pcb4l=k^wsn3ep@*cpkcnd3_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -40,6 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # For authentication
+    'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'allauth',
+    # For email login and social authentication
+    'allauth.account',     
+    'allauth.socialaccount',
+
+    # My apps
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +61,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'travel_smart.urls'
@@ -142,4 +155,28 @@ DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL')
     )
+}
+
+# Use the custom user model in the accounts app
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Custom configurations
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+# Configure django-allauth
+ACCOUNT_EMAIL_VERIFICATION = "none"  # Disable email verification for now
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }

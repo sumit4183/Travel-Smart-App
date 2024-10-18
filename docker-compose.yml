@@ -15,6 +15,20 @@ services:
       - db
         # condition: service_healthy
 
+  db:
+    image: postgres:13
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # healthcheck:
+    #   test: ["CMD-SHELL", "pg_isready -U travel_smart"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    
   frontend:
     build:
       context: ./frontend
@@ -26,21 +40,7 @@ services:
     depends_on:
       - backend
 
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: travel_admin
-      POSTGRES_PASSWORD: travelsmart
-      POSTGRES_DB: travel_smart
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    # healthcheck:
-    #   test: ["CMD-SHELL", "pg_isready -U travel_smart"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
+  
 
 volumes:
   postgres_data:
