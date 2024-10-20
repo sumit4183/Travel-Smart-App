@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     # For email login and social authentication
     'allauth.account',     
     'allauth.socialaccount',
+    # Other Apps
+    'corsheaders',
 
     # My apps
     'accounts',
@@ -63,6 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'travel_smart.urls'
@@ -165,6 +168,12 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Frontend URL
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Configure django-allauth
 ACCOUNT_EMAIL_VERIFICATION = "none"  # Disable email verification for now
