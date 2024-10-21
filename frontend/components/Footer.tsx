@@ -1,5 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Plane } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import Image from 'next/image';
 
 const FooterSection = ({ title, links }: { title: string; links: { href: string; label: string }[] }) => (
   <div className="footer-section">
@@ -16,9 +18,10 @@ const FooterSection = ({ title, links }: { title: string; links: { href: string;
   </div>
 );
 
-const SocialIcon = ({ Icon, href }: { Icon: React.ElementType; href: string }) => (
+const SocialIcon = ({ iconPath, href }: { iconPath: string; href: string }) => (
   <Link href={href} className="text-gray-400 hover:text-white">
-    <Icon className="h-6 w-6" />
+    {/* <img src={iconPath} alt="social icon" className="h-6 w-6" /> */}
+    <Image src={iconPath} alt="social icon" width={24} height={24} className="h-6 w-6 text-gray-400" />
   </Link>
 );
 
@@ -34,11 +37,10 @@ export default function Footer() {
             <p className="text-gray-400 text-base">
               Your AI-powered travel assistant for smart, personalized travel itineraries, packing, and expenses.
             </p>
-            <div className="flex space-x-6">
-              <SocialIcon Icon={Facebook} href="#" />
-              <SocialIcon Icon={Twitter} href="#" />
-              <SocialIcon Icon={Instagram} href="#" />
-            </div>
+            {/* <div className="flex space-x-6">
+              <SocialIcon iconPath='/icons/x.svg' href="#" />
+              <SocialIcon iconPath='/icons/facebook.svg' href="#" />
+            </div> */}
           </div>
 
           {/* Services, Support, Company, and Legal */}
@@ -95,7 +97,7 @@ export default function Footer() {
           </div>
           <div className="flex items-center">
             <MapPin className="h-6 w-6 mr-3 text-gray-400" />
-            <p>123 Travel St., Wanderlust City, USA</p>
+            <p>123 Travel St., Travel City, USA</p>
           </div>
         </div>
 

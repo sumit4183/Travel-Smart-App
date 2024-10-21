@@ -10,8 +10,12 @@ import Input from "@/components/ui/Input";
 
 export default function RegistrationPage() {
   const [registrationType, setRegistrationType] = useState<"email" | "facebook">("email");
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [error, setError] = useState<string | null>(null); // General error state
+  const [passwordError, setPasswordError] = useState<string | null>(null); // Password-specific error
   const router = useRouter(); // For redirecting after successful registration
+
+  // Password requirements (display this below the password field)
+  const passwordRequirements = "Password must be at least 8 characters long, contain one uppercase letter, one number, and one special character.";
 
   // Form fields state
   const [formData, setFormData] = useState({
@@ -22,12 +26,34 @@ export default function RegistrationPage() {
     confirmPassword: "",
   });
 
+  const validatePassword = (password: string) => {
+    const minLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    // If any requirement is not met, return a simple error message
+    if (!minLength || !hasUpperCase || !hasNumber || !hasSpecialChar) {
+      return "Password requirements are not met.";
+    }
+    return null; // Return null if all requirements are met
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); // Clear any previous errors
+    setPasswordError(null); // Clear previous password errors
 
+    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+
+    // Check if password meets the requirements
+    const passwordValidationError = validatePassword(formData.password);
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
       return;
     }
 
@@ -75,14 +101,14 @@ export default function RegistrationPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {error && <p className="text-red-500 mb-4">{error}</p>} {/* General error displayed at the top */}
+
           <div className="mb-6">
             <Button onClick={() => setRegistrationType("facebook")} className="bg-blue-700 hover:bg-blue-700">
               <Facebook className="w-5 h-5 mr-2" />
               Sign up with Facebook
             </Button>
           </div>
-
-          {error && <p className="text-red-500 mb-4">{error}</p>} {/* Display error */}
 
           <div className="mt-6 relative">
             <div className="absolute inset-0 flex items-center">
@@ -97,7 +123,12 @@ export default function RegistrationPage() {
             <Input label="First Name" type="text" id="firstName" placeholder="John" required onChange={handleInputChange} />
             <Input label="Last Name" type="text" id="lastName" placeholder="Doe" required onChange={handleInputChange} />
             <Input label="Email address" type="email" id="email" placeholder="john@example.com" required onChange={handleInputChange} />
+
+            {/* Password field with validation message */}
             <Input label="Password" type="password" id="password" placeholder="••••••••" required onChange={handleInputChange} />
+            <small className="text-gray-500 block">{passwordRequirements}</small>
+            {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>} {/* Display password errors below password field */}
+
             <Input label="Confirm Password" type="password" id="confirmPassword" placeholder="••••••••" required onChange={handleInputChange} />
             
             <div>
