@@ -21,3 +21,9 @@ EXPOSE 3000
 
 # Start the Next.js development server
 CMD ["npm", "run", "dev"]
+
+# # Commands for production
+# # Build the app for production
+# RUN npm run build
+# # Serve the built app
+# CMD ["npm", "run", "start"]
