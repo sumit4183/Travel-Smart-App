@@ -29,3 +29,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
       travel_preferences=validated_data.get('travel_preferences', '')
     )
     return user
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()

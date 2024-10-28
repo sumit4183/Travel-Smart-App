@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const SignIn = () => {
   return (
@@ -24,9 +24,18 @@ const SignIn = () => {
             className="border p-2 rounded w-full"
             required
           />
-          <button type="submit" className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full">
+          <button
+            type="submit"
+            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full"
+          >
             Sign In
           </button>
+          <p className="text-center">
+            Forgot Password? Reset it{" "}
+            <a href="/reset-password" className="text-blue-600 hover:underline">
+              here
+            </a>
+          </p>
         </form>
       </div>
     </div>
