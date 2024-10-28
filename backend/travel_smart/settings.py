@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 import dj_database_url
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -73,7 +74,7 @@ ROOT_URLCONF = 'travel_smart.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -116,6 +117,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    # {
+    #     # Path to custom validator
+    #     'NAME': 'accounts.validators.CustomPasswordValidator',  
+    # }
 ]
 
 
@@ -146,17 +151,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'travel_smart',
-#         'USER': 'travelsmart',
+#         'USER': 'travel_admin',
 #         'PASSWORD': 'travelsmart',
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
 # }
 
+# DB_URL = 'postgres://travel_admin:travelsmart@localhost:5432/travel_smart'
+
 # Database configuration using dj-database-url
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL')
+        default=config("DATABASE_URL")
     )
 }
 
@@ -173,7 +180,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend URL
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Configure django-allauth
 ACCOUNT_EMAIL_VERIFICATION = "none"  # Disable email verification for now
@@ -186,6 +195,31 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
+#        'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+
+# SMTP config
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'demotsa123@gmail.com'
+EMAIL_HOST_PASSWORD = 'hrei jhqe bsnw limr'
+DEFAULT_FROM_EMAIL = 'demotsa123@gmail.com'
+
+# Password reset link timeout
+PASSWORD_RESET_TIMEOUT = 3600
+
+# To allow frontend to be able to send requests to Django
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+# Other settings to manage CSRF cookies
+CSRF_COOKIE_HTTPONLY = False  
+CSRF_USE_SESSIONS = False  
+# CSRF_COOKIE_SECURE = True
+
