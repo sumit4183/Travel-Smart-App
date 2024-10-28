@@ -5,6 +5,7 @@ from .csrf_view import csrf_token_view
 from .views import PasswordResetAPIView
 from .views import CustomPasswordResetConfirmView
 
+from .views import CustomUserRegistrationView, CustomUserLoginView, UserProfileView
 
 urlpatterns = [
     path('registration/', CustomUserRegistrationView.as_view(), name='custom_registration'),
@@ -16,4 +17,6 @@ urlpatterns = [
     path('api/csrf/', csrf_token_view, name='csrf_token_view'),
     path('api/password_reset/', PasswordResetAPIView.as_view(), name='password_reset_api'),
     path('api/reset/<uidb64>/<token>/',CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('login/', CustomUserLoginView.as_view(), name='custom_login'),
+    path('auth/user/', UserProfileView.as_view(), name='user_profile'),
 ]
