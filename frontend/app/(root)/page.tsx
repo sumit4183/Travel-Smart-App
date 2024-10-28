@@ -1,4 +1,23 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
 const Home = () => {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    setIsLoggedIn(!!token); // Sets to true if a token exists in either storage
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');  // Remove token from storage
+    setIsLoggedIn(false);  // Update login state
+    router.push('/');  // Redirect to the home page
+  };
+
   return (
     <div>
       {/* Hero Section */}
@@ -15,14 +34,12 @@ const Home = () => {
         <div className="flex flex-col justify-center items-center h-full text-white z-10">
           <h1 className="text-5xl font-bold mb-4">Welcome to Travel Smart</h1>
           <p className="text-xl mb-6">Your AI-driven travel assistant for seamless journeys.</p>
-          <a href="/get-started" className="bg-yellow-500 text-black py-2 px-4 rounded hover:bg-yellow-600 transition duration-300">
-            Get Started
-          </a>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="py-16 px-4">
+        {/* Feature Section */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-4">Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -41,7 +58,6 @@ const Home = () => {
               <p>AI-generated itineraries based on user preferences, destination, and budget.</p>
               <a href="/itineraries" className="text-blue-500 hover:underline mt-2 inline-block">Learn More</a>
             </div>
-            {/* Add more feature cards as needed */}
           </div>
         </section>
 
