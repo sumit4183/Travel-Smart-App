@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
+  const router = useRouter();
   const [active, setActive] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navLinks = [
     { id: "home", title: "Home", href: "/" },
@@ -17,6 +20,30 @@ const Navbar = () => {
     { id: "signin", title: "Sign In", href: "/sign-in" },
     { id: "signup", title: "Sign Up", href: "/sign-up" },
   ];
+  
+  // Check login status on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    setIsLoggedIn(!!token);
+    
+    // Listen to storage changes to handle login status changes across tabs
+    const handleStorageChange = () => {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      setIsLoggedIn(!!token);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    setIsLoggedIn(false);
+    router.push("/sign-in"); // Redirect to sign-in page after logout
+  };
 
   return (
     <nav className="w-full py-5 fixed top-0 z-20 bg-gray-800">
@@ -45,12 +72,28 @@ const Navbar = () => {
         </ul>
 
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/sign-in" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
-            Sign In
-          </Link>
-          <Link href="/sign-up" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
-            Sign Up
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/profile" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/sign-in" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                Sign In
+              </Link>
+              <Link href="/sign-up" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -81,12 +124,55 @@ const Navbar = () => {
               <Link key={link.id} href={link.href}>
                 <p
                   className={`${active === link.title ? "text-white" : "text-gray-400"} block px-3 py-2 rounded-md text-base font-medium`}
-                  onClick={() => setIsOpen(!isOpen)}
+                  onClick={() => {
+                    setIsOpen(!isOpen);
+                    setActive(link.title);
+                  }}
                 >
                   {link.title}
                 </p>
               </Link>
             ))}
+            {isLoggedIn ? (
+              <>
+                <Link href="/profile">
+                  <p
+                    className="text-gray-400 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Profile
+                  </p>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="text-gray-400 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/sign-in">
+                  <p
+                    className="text-gray-400 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign In
+                  </p>
+                </Link>
+                <Link href="/sign-up">
+                  <p
+                    className="text-gray-400 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign Up
+                  </p>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

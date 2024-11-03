@@ -2,21 +2,34 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 const Home = () => {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        router.push('/sign-in');
+      } else {
+        const response = await axios.get('http://localhost:8000/auth/status/', {
+          headers: { Authorization: `Token ${token}` },
+        });
+        if (!response.data.is_authenticated) {
+          router.push('/sign-in');
+        }
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     setIsLoggedIn(!!token); // Sets to true if a token exists in either storage
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');  // Remove token from storage
-    setIsLoggedIn(false);  // Update login state
-    router.push('/');  // Redirect to the home page
-  };
 
   return (
     <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // To handle redirects after registration
 import axios, { AxiosError } from "axios"; // Import Axios to make API requests
 import { Facebook } from "lucide-react";
@@ -77,13 +77,28 @@ export default function RegistrationPage() {
         // Log the full error response from the server
         console.error("Error response from server:", error.response.data);
 
-        const errorData = error.response.data as { detail?: string; [key: string]: any };
+        const errorData = error.response.data as { detail?: string };
         setError(errorData.detail || Object.values(errorData).join(", ") || "Registration failed. Please try again.");
       } else {
         setError("An unexpected error occurred. Please check your network connection.");
       }
     }
   };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (token) {
+        const response = await axios.get('http://localhost:8000/auth/status/', {
+          headers: { Authorization: `Token ${token}` },
+        });
+        if (response.data.is_authenticated) {
+          router.push('/profile');
+        }
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;

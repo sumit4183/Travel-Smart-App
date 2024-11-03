@@ -1,13 +1,12 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, get_user_model
 from .serializers import CustomUserSerializer
 from django.utils import timezone
 from datetime import timedelta
-
 from django.contrib.auth.forms import PasswordResetForm
 from .serializers import PasswordResetSerializer
 from django.http import JsonResponse
@@ -27,6 +26,11 @@ def get_user(uidb64):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return None
 
+class AuthenticationStatusView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"is_authenticated": request.user.is_authenticated})
 
 class CustomUserRegistrationView(APIView):
     permission_classes = [AllowAny]
@@ -47,29 +51,23 @@ class CustomUserLoginView(APIView):
         user = User.objects.filter(email=email).first()
 
         if user is not None:
-            # Check if the account is locked
             if user.account_locked_until and timezone.now() < user.account_locked_until:
                 return Response({'detail': 'Your account is temporarily locked due to multiple failed login attempts. Please try again later.'}, status=status.HTTP_403_FORBIDDEN)
 
-            # Authenticate user
             authenticated_user = authenticate(username=email, password=password)
 
             if authenticated_user is not None:
-                # Reset failed login attempts on successful login
                 user.failed_login_attempts = 0
                 user.account_locked_until = None
                 user.save()
-
                 token, created = Token.objects.get_or_create(user=user)
                 return Response({'token': token.key})
             else:
-                # Increment failed login attempts
                 user.failed_login_attempts += 1
                 user.save()
 
-                # Lock the account after 5 failed attempts
                 if user.failed_login_attempts >= 5:
-                    user.account_locked_until = timezone.now() + timedelta(minutes=5)  # Lock for 5 minutes
+                    user.account_locked_until = timezone.now() + timedelta(minutes=5)
                     user.save()
                     return Response({'detail': 'Your account has been temporarily locked due to multiple failed login attempts. Please try again later.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -78,7 +76,7 @@ class CustomUserLoginView(APIView):
             return Response({'detail': 'User with this email does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(APIView):
-    permission_classes = [IsAuthenticated]  # Require authentication
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = request.user
@@ -90,35 +88,29 @@ class UserProfileView(APIView):
         }
         return Response(user_data)
 
-
 class PasswordResetAPIView(APIView):
     permission_classes = [AllowAny]
 
-    # Handle POST request for initiating a password reset
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
         if serializer.is_valid():
             form = PasswordResetForm({'email': serializer.data['email']})
             if form.is_valid():
-                 # Send password reset email with a link
                 form.save(
                     request=request, 
                     from_email='your-email@example.com',
                     email_template_name='registration/password_reset_email.html',
                     use_https=request.is_secure(),
-                    domain_override='localhost:3000'    # replaced for local testing
+                    domain_override='localhost:3000'
                 )
                 return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
             return Response({'error': 'Invalid email'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# View for confirming the password reset and setting a new password
 class CustomPasswordResetConfirmView(View):
     def post(self, request, *args, **kwargs):
         body_unicode = request.body.decode('utf-8')
         body_data = json.loads(body_unicode)
-
-        # Get the email from the body data
         new_password = body_data.get('new_password')
         user = get_user(kwargs['uidb64'])
 
