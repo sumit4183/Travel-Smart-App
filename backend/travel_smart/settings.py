@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     # For authentication
     'rest_framework',
+    'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'dj_rest_auth',
     'allauth',
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
 
     # My apps
     'accounts',
+    'settings',
 ]
 
 MIDDLEWARE = [
@@ -196,7 +198,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
-#        'rest_framework.permissions.IsAuthenticated',
+       'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
@@ -223,3 +225,8 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False  
 # CSRF_COOKIE_SECURE = True
 
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
