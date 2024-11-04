@@ -18,10 +18,8 @@ const SignIn = () => {
         const response = await axios.get('http://localhost:8000/auth/status/', {
           headers: { Authorization: `Token ${token}` },
         });
-        console.log(response);
         if (response.data.is_authenticated) {
           router.push('/profile');
-          console.log("Inside if if token is authenticated");
         }
       }
     };
