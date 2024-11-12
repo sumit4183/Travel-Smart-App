@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.authtoken.models import Token
+from rest_framework import viewsets
+from .models import TravelPreferences
+from .serializers import TravelPreferencesSerializer
 from django.contrib.auth import authenticate, get_user_model
 from .serializers import CustomUserSerializer
 from django.utils import timezone
@@ -121,3 +124,16 @@ class CustomPasswordResetConfirmView(View):
         user.save(update_fields=['password'])
 
         return JsonResponse({'message': 'Password reset successful'}, status=200)
+    
+    class TravelPreferencesViewSet(viewsets.ModelViewSet):
+        permission_classes = [IsAuthenticated]
+        serializer_class = TravelPreferencesSerializer
+
+        def get_queryset(self):
+            return TravelPreferences.objects.filter(user=self.request.user)
+
+        def perform_create(self, serializer):
+            serializer.save(user=self.request.user)
+
+        def perform_update(self, serializer):
+            serializer.save(user=self.request.user)
