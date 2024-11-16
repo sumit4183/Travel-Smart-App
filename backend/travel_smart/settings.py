@@ -160,12 +160,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #     }
 # }
 
-# DB_URL = 'postgres://travel_admin:travelsmart@localhost:5432/travel_smart'
+DB_URL = 'postgres://travel_admin:travelsmart@localhost:5432/travel_smart'
 
 # Database configuration using dj-database-url
 DATABASES = {
     'default': dj_database_url.config(
-        default=config("DATABASE_URL")
+        default=DB_URL
     )
 }
 
@@ -182,7 +182,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend URL
 ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 

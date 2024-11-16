@@ -85,8 +85,30 @@ class UserProfileView(APIView):
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
+            "phone_number": user.phone_number,
+            "address": user.address,
         }
         return Response(user_data)
+    
+    def put(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data['userDetails']
+
+        if "email" in data:
+            user.email = data["email"]
+        if "first_name" in data:
+            user.first_name = data["first_name"]
+        if "last_name" in data:
+            user.last_name = data["last_name"]
+        if "phone_number" in data:  
+            user.phone_number = data["phone_number"]
+        if "address" in data:       
+            user.address = data["address"]
+
+        # Save the updated user object
+        user.save()
+
+        return Response({"message": "User profile updated successfully."}, status=status.HTTP_200_OK)
 
 class PasswordResetAPIView(APIView):
     permission_classes = [AllowAny]

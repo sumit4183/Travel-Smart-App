@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   backend:
@@ -28,7 +28,7 @@ services:
     #   interval: 10s
     #   timeout: 5s
     #   retries: 5
-    
+
   frontend:
     build:
       context: ./frontend
@@ -39,8 +39,6 @@ services:
       - ./frontend:/app
     depends_on:
       - backend
-
-  
 
 volumes:
   postgres_data:
