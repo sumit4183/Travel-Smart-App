@@ -101,7 +101,7 @@ const PersonalDetails = () => {
   const validateName = (firstName: string): string | null => {
     // Check if the field is empty
     if (!firstName.trim()) {
-      return "First name is required.";
+      return "First and last name are required.";
     }
 
     // Check for valid characters (letters, spaces, hyphens only)
@@ -281,6 +281,28 @@ const PersonalDetails = () => {
     setIsSaving(true);
     setError(null);
 
+    // Perform final validation checks
+    const firstNameError = validateName(userDetails?.first_name || "");
+    const lastNameError = validateName(userDetails?.last_name || "");
+    const emailError = validateEmail(userDetails?.email || "");
+    const phoneNumberError = validatePhoneNumber(
+      userDetails?.phone_number || ""
+    );
+    const addressError = validateAddress(userDetails?.address || "");
+
+    // If any validation fails, do not proceed with saving
+    if (
+      firstNameError ||
+      lastNameError ||
+      emailError ||
+      phoneNumberError ||
+      addressError
+    ) {
+      alert("Validation failed! Please check your inputs and try again.");
+      setIsSaving(false);
+      return;
+    }
+
     try {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -298,7 +320,7 @@ const PersonalDetails = () => {
 
       alert("User details saved successfully!");
     } catch (err) {
-      setError("Failed to save address.");
+      setError("Failed to save changes.");
     } finally {
       setIsSaving(false);
     }
@@ -394,7 +416,7 @@ const PersonalDetails = () => {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className={`bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 ${
+          className={`py-1 px-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${
             isSaving ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
