@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CustomUser
+from .models import TravelPreferences
 
 class CustomUserSerializer(serializers.ModelSerializer):
   password1 = serializers.CharField(write_only=True)
@@ -32,3 +33,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
+class TravelPreferencesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TravelPreferences
+        fields = ['destination_type', 'transportation', 'airline', 'seating_class', 'meal', 'activities']
