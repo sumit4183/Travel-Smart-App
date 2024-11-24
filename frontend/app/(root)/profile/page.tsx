@@ -6,9 +6,13 @@ import Image from "next/image";
 import Input from "@/components/ui/Input";
 import axios from "axios";
 
-interface PhotoUploadButtonProps {
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  children: React.ReactNode; // Define children as ReactNode
+interface PhotoUploadProps {
+  currentImage: string;
+  onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  altText: string;
+  id: string;
+  className?: string;
+  overlayText: string;
 }
 
 interface SidebarButtonProps {
@@ -18,41 +22,181 @@ interface SidebarButtonProps {
   onClick: () => void;
 }
 
-const SidebarButton = ({
-  active,
-  icon: Icon,
-  label,
-  onClick,
-}: SidebarButtonProps) => (
+interface Preferences {
+  destinationType: string;
+  transportation: string;
+  airline: string;
+  seatingClass: string;
+  meal: string;
+  activities: string;
+}
+
+interface PersonalInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+const ProfilePage: React.FC = () => {
+  const [email, setEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        setError("User is not authenticated.");
+        return;
+      }
+      try {
+        const response = await axios.get('http://localhost:8000/api/user/profile/', {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setEmail(response.data.email);
+      } catch (err) {
+        setError("Failed to fetch user data.");
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-4xl font-bold mb-6">Profile Page</h1>
+      {email ? (
+        <DarkProfilePage userEmail={email} />
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+};
+
+const SidebarButton = ({ active, icon: Icon, label, onClick }: SidebarButtonProps) => (
   <button
     onClick={onClick}
     className={`flex items-center space-x-3 w-full px-4 py-3 text-left transition-colors duration-200 ${
-      active ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700"
+      active ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700'
     }`}
   >
     <Icon size={20} />
     <span>{label}</span>
   </button>
-);
+)
 
-const PhotoUploadButton = ({ onChange, children }: PhotoUploadButtonProps) => (
-  <div className="relative group cursor-pointer">
-    <input
-      type="file"
-      accept="image/*"
-      onChange={onChange}
-      className="hidden"
-      id="photo-upload"
+const PhotoUpload = ({ 
+  currentImage, 
+  onImageChange, 
+  altText, 
+  id, 
+  className = '', 
+  overlayText 
+}: PhotoUploadProps) => {
+  return (
+    <div className={`relative group ${className}`}>
+      <img
+        src={currentImage}
+        alt={altText}
+        className="w-full h-full object-cover"
+      />
+      <label
+        htmlFor={id}
+        className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+      >
+        <div className="flex flex-col items-center text-white">
+          <Camera className="w-6 h-6 mb-2" />
+          <span className="text-sm font-medium">{overlayText}</span>
+        </div>
+      </label>
+      <input
+        type="file"
+        id={id}
+        onChange={onImageChange}
+        accept="image/*"
+        className="hidden"
+      />
+    </div>
+  );
+};
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+const usePersistedImage = (key: string, defaultImage: string, userEmail: string) => {
+  const userSpecificKey = `${userEmail}:${key}`;
+  const [image, setImage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(userSpecificKey);
+      return saved || defaultImage;
+    }
+    return defaultImage;
+  });
+
+  useEffect(() => {
+    if (image !== defaultImage) {
+      localStorage.setItem(userSpecificKey, image);
+    }
+  }, [image, userSpecificKey, defaultImage]);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const base64String = await fileToBase64(file);
+        setImage(base64String);
+      } catch (error) {
+        console.error('Error converting image:', error);
+      }
+    }
+  };
+
+  // Add cleanup function to reset state when user changes
+  useEffect(() => {
+    return () => {
+      setImage(defaultImage);
+    };
+  }, [userEmail, defaultImage]);
+
+  return [image, handleImageChange] as const;
+};
+
+const ProfilePhotoUpload = ({ defaultImage, userEmail }: { defaultImage: string; userEmail: string }) => {
+  const [image, handleImageChange] = usePersistedImage('profilePhoto', defaultImage, userEmail);
+  return (
+    <PhotoUpload
+      currentImage={image}
+      onImageChange={handleImageChange}
+      altText="Profile photo"
+      id="profile-photo-upload"
+      className="w-32 h-32 rounded-full border-4 border-gray-900 overflow-hidden"
+      overlayText="Change Profile Photo"
     />
-    <label
-      htmlFor="photo-upload"
-      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-    >
-      <Camera className="w-6 h-6 mr-2" />
-      {children}
-    </label>
-  </div>
-);
+  );
+};
+
+const CoverPhotoUpload = ({ defaultImage, userEmail }: { defaultImage: string; userEmail: string }) => {
+  const [image, handleImageChange] = usePersistedImage('coverPhoto', defaultImage, userEmail);
+  return (
+    <PhotoUpload
+      currentImage={image}
+      onImageChange={handleImageChange}
+      altText="Cover photo"
+      id="cover-photo-upload"
+      className="h-64 rounded-t-xl overflow-hidden"
+      overlayText="Change Cover Photo"
+    />
+  );
+};
 
 const PersonalDetails = () => {
   const [userDetails, setUserDetails] = useState<null | {
@@ -427,49 +571,138 @@ const PersonalDetails = () => {
   );
 };
 
-const TravelPreferences = () => (
-  <div className="space-y-6">
-    <div>
-      <label className="block text-sm font-medium text-gray-300">
-        Preferred Destinations
-      </label>
-      <Input
-        label=""
-        type="text"
-        id="travel_preferences"
-        placeholder="Beach, Mountains, Cities"
-        value=""
-        onChange={() => {}}
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium text-gray-300">
-        Travel Style
-      </label>
-      <Input
-        label=""
-        type="text"
-        id="preferred_language"
-        placeholder="English, Russian, German, etc."
-        value=""
-        onChange={() => {}}
-      />
-    </div>
-    {/* Will be adding other preferences depending on the app and features */}
-  </div>
-);
+const TravelPreferences = ({ userEmail }: { userEmail: string }) => {
+  const [preferences, setPreferences] = useState<Preferences>({
+    destinationType: '',
+    transportation: '',
+    airline: '',
+    seatingClass: '',
+    meal: '',
+    activities: ''
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-const TripCard = ({
-  trip,
-}: {
-  trip: {
-    destination: string;
-    date: string;
-    image: string;
-    description: string;
+  useEffect(() => {
+    fetchPreferences();
+  }, []);
+
+  const fetchPreferences = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const response = await axios.get('http://localhost:8000/api/travel-preferences/', {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setPreferences(response.data);
+    } catch (error) {
+      console.error('Error fetching preferences:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPreferences(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      await axios.put('http://localhost:8000/api/travel-preferences/', preferences, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading preferences...</div>;
+  }
+
+  return (
+    <div className="travel-preferences">
+      <h2>Travel Preferences</h2>
+
+      {isEditing ? (
+        <div>
+          <Input
+            label="Destination Type"
+            type="text"
+            id="destinationType"
+            placeholder="e.g., Beach, Mountains"
+            value={preferences.destinationType}
+            onChange={handleChange}
+          />
+          <Input
+            label="Transportation"
+            type="text"
+            id="transportation"
+            placeholder="e.g., Car, Plane"
+            value={preferences.transportation}
+            onChange={handleChange}
+          />
+          <Input
+            label="Airline"
+            type="text"
+            id="airline"
+            placeholder="e.g., Delta, Southwest"
+            value={preferences.airline}
+            onChange={handleChange}
+          />
+          <Input
+            label="Seating Class"
+            type="text"
+            id="seatingClass"
+            placeholder="e.g., Economy, Business"
+            value={preferences.seatingClass}
+            onChange={handleChange}
+          />
+          <Input
+            label="Meal"
+            type="text"
+            id="meal"
+            placeholder="e.g., Vegetarian, Gluten-Free"
+            value={preferences.meal}
+            onChange={handleChange}
+          />
+          <Input
+            label="Activities"
+            type="text"
+            id="activities"
+            placeholder="e.g., Hiking, Sightseeing"
+            value={preferences.activities}
+            onChange={handleChange}
+          />
+          
+          <div className="flex gap-4 mt-4">
+            <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+            <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <ul className="list-disc pl-5">
+            <li><strong>Destination Type:</strong> {preferences.destinationType}</li>
+            <li><strong>Transportation:</strong> {preferences.transportation}</li>
+            <li><strong>Airline:</strong> {preferences.airline}</li>
+            <li><strong>Seating Class:</strong> {preferences.seatingClass}</li>
+            <li><strong>Meal:</strong> {preferences.meal}</li>
+            <li><strong>Activities:</strong> {preferences.activities}</li>
+          </ul>
+
+          <button onClick={() => setIsEditing(true)} className="mt-4 px-4 py-2 bg-green-500 text-white rounded">Edit</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TripCard = ({ trip }: { trip: { destination: string; date: string; image: string; description: string } }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
 
   return (
     <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
@@ -482,9 +715,7 @@ const TripCard = ({
         />
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-lg text-gray-200">
-          {trip.destination}
-        </h3>
+        <h3 className="font-semibold text-lg text-gray-200">{trip.destination}</h3>
         <div className="flex items-center text-gray-400 text-sm mt-1">
           <Calendar className="w-4 h-4 mr-1" />
           <span>{trip.date}</span>
@@ -493,15 +724,17 @@ const TripCard = ({
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-blue-400 hover:text-blue-300 text-sm font-medium"
         >
-          {isExpanded ? "Show less" : "Show more"}
+          {isExpanded ? 'Show less' : 'Show more'}
         </button>
         {isExpanded && (
-          <div className="mt-2 text-gray-300">{trip.description}</div>
+          <div className="mt-2 text-gray-300">
+            {trip.description}
+          </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const TravelHistory = () => {
   const trips = [
@@ -537,55 +770,16 @@ const TravelHistory = () => {
   );
 };
 
-export default function DarkProfilePage() {
-  const [activeTab, setActiveTab] = useState("personal");
-  const [coverPhoto, setCoverPhoto] = useState(
-    "/placeholder.svg?height=300&width=1200"
-  );
-  const [profilePhoto, setProfilePhoto] = useState(
-    "/placeholder.svg?height=150&width=150"
-  );
-
-  const handleCoverPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setCoverPhoto(url);
-    }
-  };
-
-  const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setProfilePhoto(url);
-    }
-  };
+export default function DarkProfilePage({ userEmail }: { userEmail: string }) {
+  const [activeTab, setActiveTab] = useState('personal');
 
   return (
     <div className="min-h-screen pt-10 bg-gray-900">
       <div className="max-w-7xl mx-auto p-4">
         <div className="relative">
-          <div className="h-64 relative rounded-t-xl bg-green-200 overflow-hidden">
-            <Image src={coverPhoto} alt="Cover" fill className="object-cover" />
-            <PhotoUploadButton onChange={handleCoverPhotoChange}>
-              Change Cover
-            </PhotoUploadButton>
-          </div>
+          <CoverPhotoUpload defaultImage="/placeholder.svg?height=300&width=1200" userEmail={userEmail} />
           <div className="absolute -bottom-16 left-8">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-gray-900 bg-yellow-200 overflow-hidden relative">
-                <Image
-                  src={profilePhoto}
-                  alt="Profile"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <PhotoUploadButton onChange={handleProfilePhotoChange}>
-                Change Photo
-              </PhotoUploadButton>
-            </div>
+            <ProfilePhotoUpload defaultImage="/placeholder.svg?height=150&width=150" userEmail={userEmail} />
           </div>
         </div>
 
@@ -593,32 +787,32 @@ export default function DarkProfilePage() {
           <div className="w-64 bg-gray-800 border-r border-gray-700">
             <nav className="flex flex-col py-4">
               <SidebarButton
-                active={activeTab === "personal"}
+                active={activeTab === 'personal'}
                 icon={User}
                 label="Personal Details"
-                onClick={() => setActiveTab("personal")}
+                onClick={() => setActiveTab('personal')}
               />
               <SidebarButton
-                active={activeTab === "preferences"}
+                active={activeTab === 'preferences'}
                 icon={Compass}
                 label="Travel Preferences"
-                onClick={() => setActiveTab("preferences")}
+                onClick={() => setActiveTab('preferences')}
               />
               <SidebarButton
-                active={activeTab === "history"}
+                active={activeTab === 'history'}
                 icon={Clock}
                 label="Travel History"
-                onClick={() => setActiveTab("history")}
+                onClick={() => setActiveTab('history')}
               />
             </nav>
           </div>
           <div className="flex-1 p-6 text-gray-300">
-            {activeTab === "personal" && <PersonalDetails />}
-            {activeTab === "preferences" && <TravelPreferences />}
-            {activeTab === "history" && <TravelHistory />}
-          </div>
+        {activeTab === "personal" && <PersonalDetails />}
+        {activeTab === 'preferences' && <TravelPreferences userEmail={userEmail} />}
+        {activeTab === 'history' && <TravelHistory />}
+      </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
