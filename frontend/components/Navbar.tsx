@@ -17,8 +17,6 @@ const Navbar = () => {
     { id: "itineraries", title: "Itineraries", href: "/itineraries" },
     { id: "packing-assistant", title: "Packing Assistant", href: "/packing-assistant" },
     { id: "expense-tracker", title: "Expense Tracker", href: "/expense-tracker" },
-    { id: "signin", title: "Sign In", href: "/sign-in" },
-    { id: "signup", title: "Sign Up", href: "/sign-up" },
   ];
   
   // Check login status on mount
@@ -70,31 +68,6 @@ const Navbar = () => {
             </li>
           ))}
         </ul>
-
-        <div className="hidden md:flex items-center gap-4">
-          {isLoggedIn ? (
-            <>
-              <Link href="/profile" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
-                Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/sign-in" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
-                Sign In
-              </Link>
-              <Link href="/sign-up" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
-                Sign Up
-              </Link>
-            </>
-          )}
-        </div>
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden flex items-center">
