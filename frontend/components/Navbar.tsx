@@ -69,6 +69,31 @@ const Navbar = () => {
           ))}
         </ul>
 
+        <div className="hidden md:flex items-center gap-4">
+          {isLoggedIn ? (
+            <>
+              <Link href="/profile" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/sign-in" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                Sign In
+              </Link>
+              <Link href="/sign-up" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
+
         {/* Mobile Menu Toggle */}
         <div className="md:hidden flex items-center">
           <button
