@@ -31,6 +31,6 @@ EXPOSE 8000
 # CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 # Use wait-for-it.sh to delay Django startup until PostgreSQL is ready
-CMD ["/wait-for-it.sh", "db", "5432", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["/wait-for-it.sh", "db", "5433", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]
 # CMD ["/wait-for-it.sh", "db", "5432", "--", "bash", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
 

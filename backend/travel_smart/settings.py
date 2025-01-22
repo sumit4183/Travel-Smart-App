@@ -156,25 +156,25 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom Configurations
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'travel_smart',
-#         'USER': 'travel_admin',
-#         'PASSWORD': 'travelsmart',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'travel_smart',
+        'USER': 'travel_admin',
+        'PASSWORD': 'travelsmart',
+        'HOST': 'localhost',
+        'PORT': '5434',
+    }
+}
 
-DB_URL = 'postgres://travel_admin:travelsmart@localhost:5432/travel_smart'
+# DB_URL = 'postgres://travel_admin:travelsmart@localhost:5434/travel_smart'
 
 # Database configuration using dj-database-url
-DATABASES = {
-    'default': dj_database_url.config(
-        default=DB_URL
-    )
-}
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=DB_URL
+#     )
+# }
 
 # Use the custom user model in the accounts app
 AUTH_USER_MODEL = 'accounts.CustomUser'
