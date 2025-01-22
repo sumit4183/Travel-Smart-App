@@ -33,6 +33,15 @@ export default function FlightSearch() {
   const [airports, setAirports] = useState([]);
   const [adults, setAdults] = useState(1);
   const [kids, setKids] = useState(0);
+  const [selectedFlight, setSelectedFlight] = useState<any | null>(null);
+
+  const openBookingModal = (flight: Flight) => {
+    setSelectedFlight(flight);
+  };
+
+  const closeBookingModal = () => {
+    setSelectedFlight(null);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -82,6 +91,8 @@ export default function FlightSearch() {
       console.error("Error fetching airports:", error);
     }
   };
+
+  console.log(selectedFlight);
 
   return (
     <div className="max-w-3xl mx-auto p-4">
@@ -174,27 +185,79 @@ export default function FlightSearch() {
         )}
 
         <h2 className="text-xl font-bold mt-6">Results</h2>
-        {results.length > 0 && (
-          <div>
-            <h2>Flight Results:</h2>
-            <ul>
-              {results.map((flight: any, index) => (
-                <li key={index}>
-                  {flight.itineraries.map((itinerary: any) => (
-                    <div key={itinerary.id}>
-                      {itinerary.segments.map((segment: any) => (
-                        <p key={segment.id}>
-                          {segment.departure.iataCode} to{" "}
-                          {segment.arrival.iataCode} on {segment.departure.at}
-                        </p>
-                      ))}
-                    </div>
-                  ))}
-                </li>
+
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Departure Date</th>
+                <th>Arrival Date</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((flight: any, index: number) => (
+                <tr key={index} onClick={() => openBookingModal(flight)}>
+                  <td>{formData.departure}</td>
+                  <td>{formData.arrival}</td>
+                  <td>{formData.departureDate}</td>
+                  <td>{formData.arrivalDate}</td>
+                  <td>{flight.price.total + " " + flight.price.currency}</td>
+                </tr>
               ))}
-            </ul>
-          </div>
-        )}
+            </tbody>
+          </table>
+
+          {selectedFlight && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparent black background
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1000,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "white",
+                  padding: "20px",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                  width: "400px",
+                  maxWidth: "90%",
+                }}
+              >
+                <h2>Book Your Flight</h2>
+                <form>
+                  <p>
+                    <strong>From:</strong> {formData.departure}
+                  </p>
+                  <p>
+                    <strong>To:</strong> {formData.arrival}
+                  </p>
+                  <p>
+                    <strong>Price:</strong> $
+                    {selectedFlight.price.total +
+                      " " +
+                      selectedFlight.price.currency}
+                  </p>
+                  <button type="button" onClick={closeBookingModal}>
+                    Close
+                  </button>
+                  <button type="submit">Confirm Booking</button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
