@@ -150,10 +150,6 @@ export default function RegistrationPage() {
               <Button type="submit">Create Account</Button>
             </div>
           </form>
-
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Already have an account? <a href="/sign-in" className="font-medium text-blue-700 hover:text-blue-600">Sign in</a>
-          </p>
         </div>
       </div>
     </div>
