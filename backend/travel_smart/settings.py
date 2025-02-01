@@ -163,7 +163,7 @@ DATABASES = {
         'USER': 'travel_admin',
         'PASSWORD': 'travelsmart',
         'HOST': 'localhost',
-        'PORT': '5434',
+        'PORT': '5433',
     }
 }
 
