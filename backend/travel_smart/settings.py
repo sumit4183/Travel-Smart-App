@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # My apps
     'accounts',
     'settings',
+    'flights',
 ]
 
 MIDDLEWARE = [
