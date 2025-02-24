@@ -2,6 +2,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from amadeus import Client, ResponseError
 from django.conf import settings
+from django.utils.crypto import get_random_string
+from .models import Booking
+from django.contrib.auth.decorators import login_required 
 import json
 import hashlib
 import random
@@ -52,184 +55,39 @@ def get_airports(request):
 
 @csrf_exempt 
 def book_flight(request):
+    print("Book flight")
+
     amadeus = Client(
         client_id=settings.AMADEUS_CLIENT_ID,
         client_secret=settings.AMADEUS_CLIENT_SECRET
     )
-    if request.method != "POST":
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            flight = data.get("flight")  
+            traveler = data.get("traveler")
+            
+            # Step 1: Confirm flight pricing
+            pricing_response = amadeus.shopping.flight_offers.pricing.post(flight)
+
+            if pricing_response.status_code != 200:
+                return JsonResponse({"error": "Pricing confirmation failed", "details": pricing_response.body}, status=400)
+
+            confirm_flight = pricing_response.data['flightOffers']
+
+            # Step 2: Proceed with booking
+            booking_response = amadeus.booking.flight_orders.post(confirm_flight, traveler)
+
+            if booking_response.status_code == 201:
+                return JsonResponse(booking_response.data, status=201)
+            return JsonResponse({"error": "Booking failed", "details": booking_response.body}, status=400)
+        except (ResponseError, KeyError, AttributeError) as error:
+            return JsonResponse({"error": str(error)}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+    else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
 
-    try:
-        data = json.loads(request.body)
-
-        # Extract required parameters from frontend request
-        departure = data.get("departure")
-        arrival = data.get("arrival")
-        departure_date = data.get("departureDate")
-        arrival_date = data.get("arrivalDate")
-        price = data.get("price")
-        currency = data.get("currency")
-        adults = int(data.get("adults", 1))
-        kids = int(data.get("kids", 0))
-        travelers = data.get("travelers", [])
-        payment_token = data.get("paymentToken")  # Tokenized payment info
-
-        if not departure or not arrival or not departure_date or not price or not currency or not travelers:
-            return JsonResponse({"error": "Missing required fields"}, status=400)
-
-# Ensure travelers have the correct format
-        # formatted_travelers = [
-        #     {
-        #         "id": str(i + 1),
-        #         "dateOfBirth": traveler["dateOfBirth"],
-        #         "name": {
-        #             "firstName": traveler["firstName"],
-        #             "lastName": traveler["lastName"]
-        #         },
-        #         "gender": "MALE" if i % 2 == 0 else "FEMALE",
-        #         "contact": {
-        #             "emailAddress": f"traveler{i+1}@example.com",
-        #             "phones": [
-        #                 {
-        #                     "deviceType": "MOBILE",
-        #                     "countryCallingCode": "1",
-        #                     "number": "1234567890"
-        #                 }
-        #             ]
-        #         }
-        #     }
-        #     for i, traveler in enumerate(travelers)
-        # ]
-
-        formatted_travelers = [
-  {
-    "id": "1",
-    "dateOfBirth": "1990-01-01",
-    "name": {
-      "firstName": "John",
-      "lastName": "Doe"
-    },
-    "gender": "MALE",
-    "contact": {
-      "emailAddress": "john.doe@example.com",
-      "phones": [
-        {
-          "deviceType": "MOBILE",
-          "countryCallingCode": "1",
-          "number": "1234567890"
-        }
-      ]
-    }
-  }
-]
-        # Construct Amadeus API request payload
-        flight_booking_request = {
-            "data": {
-                "type": "flight-order",
-                "flightOffers": [
-                    {
-                        "type": "flight-offer",
-                        "id": "1",
-                        "source": "GDS",
-                        "instantTicketingRequired": False,
-                        "paymentCardRequired": False,
-                        "itineraries": [
-                            {
-                                "segments": [
-                                    {
-                                        "departure": {
-                                            "iataCode": departure,
-                                            "at": departure_date
-                                        },
-                                        "arrival": {
-                                            "iataCode": arrival,
-                                            "at": arrival_date
-                                        },
-                                        "carrierCode": "KL",
-                                        "number": "123",
-                                        "aircraft": {
-                                            "code": "777"
-                                        },
-                                        "operating": {
-                                            "carrierCode": "AF"
-                                        },
-                                        "duration": "PT8H30M",
-                                        "id": "1",
-                                        "numberOfStops": 0
-                                    }
-                                ]
-                            }
-                        ],
-                        "price": {
-                            "currency": currency,
-                            "total": str(price),
-                            "base": str(price)
-                        },
-                        "pricingOptions": {
-                            "fareType": ["PUBLISHED"],
-                            "includedCheckedBagsOnly": True
-                        },
-                        "validatingAirlineCodes": ["KL"],
-                        "travelerPricings": [
-                            {
-                                "travelerId": 1,
-                                "fareOption": "STANDARD",
-                                # "travelerType": "ADULT" if i < adults else "CHILD",
-                                "travelerType": "ADULT",
-                                "price": {
-                                    "currency": currency,
-                                    "total": str(price)
-                                }
-                            }
-                            # for i in range(adults + kids)
-                        ]
-                    }
-                ],
-                "ticketingAgreement": {
-                    "option": "DELAY_TO_CANCEL",
-                    "delay": "6D"
-                },
-                "contacts": [
-                    {
-                        "addresseeName": {
-                            "firstName": "Support",
-                            "lastName": "Team"
-                        },
-                        "companyName": "Travel Agency",
-                        "purpose": "STANDARD",
-                        "phones": [
-                            {
-                                "deviceType": "MOBILE",
-                                "countryCallingCode": "1",
-                                "number": "9876543210"
-                            }
-                        ],
-                        "emailAddress": "support@travelagency.com",
-                        "address": {
-                            "lines": ["123 Travel St"],
-                            "postalCode": "10001",
-                            "cityName": "New York",
-                            "countryCode": "US"
-                        }
-                    }
-                ]
-            }
-        }
-
-        # Call Amadeus API
-        print(flight_booking_request)
-        response = amadeus.booking.flight_orders.post(
-            flight_booking_request["data"],
-            travelers=formatted_travelers
-        )
-
-        return JsonResponse(response.data, safe=False, status=200)
-
-    except ResponseError as error:
-        return JsonResponse({"error": str(error)}, status=400)
-
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON format"}, status=400)
     
 @csrf_exempt
 def tokenize_payment(request):
@@ -256,3 +114,22 @@ def tokenize_payment(request):
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
+
+@login_required
+def get_upcoming_trips(request):
+    upcoming_trips = Booking.objects.filter(user=request.user, status="confirmed").order_by("departure_date")
+    
+    trip_data = [
+        {
+            "departure": trip.departure,
+            "arrival": trip.arrival,
+            "departure_date": trip.departure_date.strftime("%Y-%m-%d"),
+            "arrival_date": trip.arrival_date.strftime("%Y-%m-%d") if trip.arrival_date else None,
+            "price": str(trip.price),
+            "currency": trip.currency,
+            "booking_reference": trip.booking_reference
+        }
+        for trip in upcoming_trips
+    ]
+
+    return JsonResponse({"upcomingTrips": trip_data}, status=200)

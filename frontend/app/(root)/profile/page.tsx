@@ -39,21 +39,35 @@ interface PersonalInfo {
   address: string;
 }
 
+interface Trip {
+  departure: string;
+  arrival: string;
+  departure_date: string;
+  arrival_date: string | null;
+  price: string;
+  currency: string;
+  booking_reference: string;
+}
+
 const ProfilePage: React.FC = () => {
   const [email, setEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) {
         setError("User is not authenticated.");
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/user/profile/', {
-          headers: { Authorization: `Token ${token}` },
-        });
+        const response = await axios.get(
+          "http://localhost:8000/api/user/profile/",
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
         setEmail(response.data.email);
       } catch (err) {
         setError("Failed to fetch user data.");
@@ -76,25 +90,30 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-const SidebarButton = ({ active, icon: Icon, label, onClick }: SidebarButtonProps) => (
+const SidebarButton = ({
+  active,
+  icon: Icon,
+  label,
+  onClick,
+}: SidebarButtonProps) => (
   <button
     onClick={onClick}
     className={`flex items-center space-x-3 w-full px-4 py-3 text-left transition-colors duration-200 ${
-      active ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700'
+      active ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700"
     }`}
   >
     <Icon size={20} />
     <span>{label}</span>
   </button>
-)
+);
 
-const PhotoUpload = ({ 
-  currentImage, 
-  onImageChange, 
-  altText, 
-  id, 
-  className = '', 
-  overlayText 
+const PhotoUpload = ({
+  currentImage,
+  onImageChange,
+  altText,
+  id,
+  className = "",
+  overlayText,
 }: PhotoUploadProps) => {
   return (
     <div className={`relative group ${className}`}>
@@ -128,14 +147,18 @@ const fileToBase64 = (file: File): Promise<string> => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
+    reader.onerror = (error) => reject(error);
   });
 };
 
-const usePersistedImage = (key: string, defaultImage: string, userEmail: string) => {
+const usePersistedImage = (
+  key: string,
+  defaultImage: string,
+  userEmail: string
+) => {
   const userSpecificKey = `${userEmail}:${key}`;
   const [image, setImage] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(userSpecificKey);
       return saved || defaultImage;
     }
@@ -155,7 +178,7 @@ const usePersistedImage = (key: string, defaultImage: string, userEmail: string)
         const base64String = await fileToBase64(file);
         setImage(base64String);
       } catch (error) {
-        console.error('Error converting image:', error);
+        console.error("Error converting image:", error);
       }
     }
   };
@@ -170,8 +193,18 @@ const usePersistedImage = (key: string, defaultImage: string, userEmail: string)
   return [image, handleImageChange] as const;
 };
 
-const ProfilePhotoUpload = ({ defaultImage, userEmail }: { defaultImage: string; userEmail: string }) => {
-  const [image, handleImageChange] = usePersistedImage('profilePhoto', defaultImage, userEmail);
+const ProfilePhotoUpload = ({
+  defaultImage,
+  userEmail,
+}: {
+  defaultImage: string;
+  userEmail: string;
+}) => {
+  const [image, handleImageChange] = usePersistedImage(
+    "profilePhoto",
+    defaultImage,
+    userEmail
+  );
   return (
     <PhotoUpload
       currentImage={image}
@@ -184,8 +217,18 @@ const ProfilePhotoUpload = ({ defaultImage, userEmail }: { defaultImage: string;
   );
 };
 
-const CoverPhotoUpload = ({ defaultImage, userEmail }: { defaultImage: string; userEmail: string }) => {
-  const [image, handleImageChange] = usePersistedImage('coverPhoto', defaultImage, userEmail);
+const CoverPhotoUpload = ({
+  defaultImage,
+  userEmail,
+}: {
+  defaultImage: string;
+  userEmail: string;
+}) => {
+  const [image, handleImageChange] = usePersistedImage(
+    "coverPhoto",
+    defaultImage,
+    userEmail
+  );
   return (
     <PhotoUpload
       currentImage={image}
@@ -573,12 +616,12 @@ const PersonalDetails = () => {
 
 const TravelPreferences = ({ userEmail }: { userEmail: string }) => {
   const [preferences, setPreferences] = useState<Preferences>({
-    destinationType: '',
-    transportation: '',
-    airline: '',
-    seatingClass: '',
-    meal: '',
-    activities: ''
+    destinationType: "",
+    transportation: "",
+    airline: "",
+    seatingClass: "",
+    meal: "",
+    activities: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -590,13 +633,17 @@ const TravelPreferences = ({ userEmail }: { userEmail: string }) => {
   const fetchPreferences = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/travel-preferences/', {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:8000/api/travel-preferences/",
+        {
+          headers: { Authorization: `Token ${token}` },
+        }
+      );
       setPreferences(response.data);
     } catch (error) {
-      console.error('Error fetching preferences:', error);
+      console.error("Error fetching preferences:", error);
     } finally {
       setIsLoading(false);
     }
@@ -604,18 +651,23 @@ const TravelPreferences = ({ userEmail }: { userEmail: string }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPreferences(prev => ({ ...prev, [name]: value }));
+    setPreferences((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      await axios.put('http://localhost:8000/api/travel-preferences/', preferences, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      await axios.put(
+        "http://localhost:8000/api/travel-preferences/",
+        preferences,
+        {
+          headers: { Authorization: `Token ${token}` },
+        }
+      );
       setIsEditing(false);
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      console.error("Error saving preferences:", error);
     }
   };
 
@@ -677,32 +729,68 @@ const TravelPreferences = ({ userEmail }: { userEmail: string }) => {
             value={preferences.activities}
             onChange={handleChange}
           />
-          
+
           <div className="flex gap-4 mt-4">
-            <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
-            <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="px-4 py-2 bg-gray-500 text-white rounded"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       ) : (
         <div>
           <ul className="list-disc pl-5">
-            <li><strong>Destination Type:</strong> {preferences.destinationType}</li>
-            <li><strong>Transportation:</strong> {preferences.transportation}</li>
-            <li><strong>Airline:</strong> {preferences.airline}</li>
-            <li><strong>Seating Class:</strong> {preferences.seatingClass}</li>
-            <li><strong>Meal:</strong> {preferences.meal}</li>
-            <li><strong>Activities:</strong> {preferences.activities}</li>
+            <li>
+              <strong>Destination Type:</strong> {preferences.destinationType}
+            </li>
+            <li>
+              <strong>Transportation:</strong> {preferences.transportation}
+            </li>
+            <li>
+              <strong>Airline:</strong> {preferences.airline}
+            </li>
+            <li>
+              <strong>Seating Class:</strong> {preferences.seatingClass}
+            </li>
+            <li>
+              <strong>Meal:</strong> {preferences.meal}
+            </li>
+            <li>
+              <strong>Activities:</strong> {preferences.activities}
+            </li>
           </ul>
 
-          <button onClick={() => setIsEditing(true)} className="mt-4 px-4 py-2 bg-green-500 text-white rounded">Edit</button>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
+          >
+            Edit
+          </button>
         </div>
       )}
     </div>
   );
 };
 
-const TripCard = ({ trip }: { trip: { destination: string; date: string; image: string; description: string } }) => {
-  const [isExpanded, setIsExpanded] = useState(false)
+const TripCard = ({
+  trip,
+}: {
+  trip: {
+    destination: string;
+    date: string;
+    image: string;
+    description: string;
+  };
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
@@ -715,7 +803,9 @@ const TripCard = ({ trip }: { trip: { destination: string; date: string; image: 
         />
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-lg text-gray-200">{trip.destination}</h3>
+        <h3 className="font-semibold text-lg text-gray-200">
+          {trip.destination}
+        </h3>
         <div className="flex items-center text-gray-400 text-sm mt-1">
           <Calendar className="w-4 h-4 mr-1" />
           <span>{trip.date}</span>
@@ -724,17 +814,77 @@ const TripCard = ({ trip }: { trip: { destination: string; date: string; image: 
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-blue-400 hover:text-blue-300 text-sm font-medium"
         >
-          {isExpanded ? 'Show less' : 'Show more'}
+          {isExpanded ? "Show less" : "Show more"}
         </button>
         {isExpanded && (
-          <div className="mt-2 text-gray-300">
-            {trip.description}
-          </div>
+          <div className="mt-2 text-gray-300">{trip.description}</div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
+
+const UpcomingTrips = () => {
+  const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTrips() {
+      try {
+        const token =
+          localStorage.getItem("token") || sessionStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:8000/flights/upcoming_trips/",
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
+        setUpcomingTrips(response.data.upcomingTrips);
+      } catch (error) {
+        console.error("Error fetching upcoming trips:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTrips();
+  }, []);
+
+  return (
+    <div className="mt-8">
+      <h2 className="text-2xl font-bold mb-4">Upcoming Trips</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : upcomingTrips.length === 0 ? (
+        <p>No upcoming trips.</p>
+      ) : (
+        <table className="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border p-2">Departure</th>
+              <th className="border p-2">Arrival</th>
+              <th className="border p-2">Departure Date</th>
+              <th className="border p-2">Price</th>
+              <th className="border p-2">Booking Ref</th>
+            </tr>
+          </thead>
+          <tbody>
+            {upcomingTrips.map((trip, index) => (
+              <tr key={index} className="hover:bg-gray-200">
+                <td className="border p-2">{trip.departure}</td>
+                <td className="border p-2">{trip.arrival}</td>
+                <td className="border p-2">{trip.departure_date}</td>
+                <td className="border p-2">
+                  {trip.price} {trip.currency}
+                </td>
+                <td className="border p-2">{trip.booking_reference}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
 
 const TravelHistory = () => {
   const trips = [
@@ -771,15 +921,21 @@ const TravelHistory = () => {
 };
 
 export default function DarkProfilePage({ userEmail }: { userEmail: string }) {
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState("personal");
 
   return (
     <div className="min-h-screen pt-10 bg-gray-900">
       <div className="max-w-7xl mx-auto p-4">
         <div className="relative">
-          <CoverPhotoUpload defaultImage="/placeholder.svg?height=300&width=1200" userEmail={userEmail} />
+          <CoverPhotoUpload
+            defaultImage="/placeholder.svg?height=300&width=1200"
+            userEmail={userEmail}
+          />
           <div className="absolute -bottom-16 left-8">
-            <ProfilePhotoUpload defaultImage="/placeholder.svg?height=150&width=150" userEmail={userEmail} />
+            <ProfilePhotoUpload
+              defaultImage="/placeholder.svg?height=150&width=150"
+              userEmail={userEmail}
+            />
           </div>
         </div>
 
@@ -787,32 +943,41 @@ export default function DarkProfilePage({ userEmail }: { userEmail: string }) {
           <div className="w-64 bg-gray-800 border-r border-gray-700">
             <nav className="flex flex-col py-4">
               <SidebarButton
-                active={activeTab === 'personal'}
+                active={activeTab === "personal"}
                 icon={User}
                 label="Personal Details"
-                onClick={() => setActiveTab('personal')}
+                onClick={() => setActiveTab("personal")}
               />
               <SidebarButton
-                active={activeTab === 'preferences'}
+                active={activeTab === "preferences"}
                 icon={Compass}
                 label="Travel Preferences"
-                onClick={() => setActiveTab('preferences')}
+                onClick={() => setActiveTab("preferences")}
               />
               <SidebarButton
-                active={activeTab === 'history'}
+                active={activeTab === "history"}
                 icon={Clock}
                 label="Travel History"
-                onClick={() => setActiveTab('history')}
+                onClick={() => setActiveTab("history")}
+              />
+              <SidebarButton
+                active={activeTab === "upcomingTrips"}
+                icon={Clock}
+                label="Upcoming Trips"
+                onClick={() => setActiveTab("upcomingTrips")}
               />
             </nav>
           </div>
           <div className="flex-1 p-6 text-gray-300">
-        {activeTab === "personal" && <PersonalDetails />}
-        {activeTab === 'preferences' && <TravelPreferences userEmail={userEmail} />}
-        {activeTab === 'history' && <TravelHistory />}
-      </div>
+            {activeTab === "personal" && <PersonalDetails />}
+            {activeTab === "preferences" && (
+              <TravelPreferences userEmail={userEmail} />
+            )}
+            {activeTab === "history" && <TravelHistory />}
+            {activeTab === "upcomingTrips" && <UpcomingTrips />}
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

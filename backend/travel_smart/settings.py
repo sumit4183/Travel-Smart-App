@@ -215,9 +215,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'demotsa123@gmail.com'
-EMAIL_HOST_PASSWORD = 'hrei jhqe bsnw limr'
-DEFAULT_FROM_EMAIL = 'demotsa123@gmail.com'
+EMAIL_HOST_USER = 'tsa202599@gmail.com'
+EMAIL_HOST_PASSWORD = 'eiwi qwkr sexs pynh'
+DEFAULT_FROM_EMAIL = 'tsa202599@gmail.com'
 
 # Password reset link timeout
 PASSWORD_RESET_TIMEOUT = 3600

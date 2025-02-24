@@ -18,6 +18,18 @@ interface Flight {
   price: { total: number; currency: string };
 }
 
+export interface User {
+  id: number;
+  email: string;
+  phone_number?: string;
+  date_of_birth?: string; // ISO format (YYYY-MM-DD)
+  address?: string;
+  preferred_language?: string;
+  failed_login_attempts: number;
+  account_locked_until?: string; // ISO format (YYYY-MM-DD HH:MM:SS)
+  travel_preferences?: string;
+}
+
 export default function FlightSearch() {
   const [formData, setFormData] = useState({
     departure: "",
@@ -41,18 +53,37 @@ export default function FlightSearch() {
     cvv: "",
   });
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  React.useEffect(() => {
+    async function fetchUser() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await axios.get("http://localhost:8000/auth/user/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.error("User not authenticated:", error);
+        setUser(null);
+      }
+    }
+    fetchUser();
+  }, []);
 
   // Updates the traveler information based on the number of adults and kids
-  React.useEffect(() => {
-    const totalTravelers = adults + kids;
-    setTravelers(
-      Array.from({ length: totalTravelers }, () => ({
-        firstName: "",
-        lastName: "",
-        dateOfBirth: "",
-      }))
-    );
-  }, [adults, kids]);
+  // React.useEffect(() => {
+  //   const totalTravelers = adults + kids;
+  //   setTravelers(
+  //     Array.from({ length: totalTravelers }, () => ({
+  //       firstName: "",
+  //       lastName: "",
+  //       dateOfBirth: "",
+  //     }))
+  //   );
+  // }, [adults, kids]);
 
   // Handles input changes for each traveler
   const handleTravelerChange = (
@@ -72,6 +103,7 @@ export default function FlightSearch() {
 
   // Opens the booking modal with the selected flight information
   const openBookingModal = (flight: Flight) => {
+    console.log(flight);
     setSelectedFlight(flight);
     setBookingSuccess(null); // Reset booking status
   };
@@ -101,7 +133,7 @@ export default function FlightSearch() {
           },
         }
       );
-
+      console.log(response.data);
       setResults(response.data);
     } catch (error) {
       console.error("Error fetching flight data:", error);
@@ -113,7 +145,10 @@ export default function FlightSearch() {
 
   // Confirms the booking
   const confirmBooking = async () => {
-    if (!selectedFlight) return;
+    // if (!selectedFlight || !user) {
+    //   setBookingError("You must be logged in to book a flight.");
+    //   return;
+    // }
 
     try {
       // Tokenizing payment details before sending
@@ -127,31 +162,72 @@ export default function FlightSearch() {
       );
 
       const token = tokenResponse.data.token;
+      const data = {
+        flight: selectedFlight,
+        traveler: [
+          {
+            id: "1",
+            dateOfBirth: "1982-01-16",
+            name: { firstName: "JORGE", lastName: "GONZALES" },
+            gender: "MALE",
+            contact: {
+              emailAddress: "jorge.gonzales833@telefonica.es",
+              phones: [
+                {
+                  deviceType: "MOBILE",
+                  countryCallingCode: "34",
+                  number: "480080076",
+                },
+              ],
+            },
+            documents: [
+              {
+                documentType: "PASSPORT",
+                birthPlace: "Madrid",
+                issuanceLocation: "Madrid",
+                issuanceDate: "2015-04-14",
+                number: "00000000",
+                expiryDate: "2025-04-14",
+                issuanceCountry: "ES",
+                validityCountry: "ES",
+                nationality: "ES",
+                holder: true,
+              },
+            ],
+          },
+        ],
+      };
 
       console.log(token);
-      const response = await axios.post("http://localhost:8000/flights/book/", {
-        departure: formData.departure,
-        arrival: formData.arrival,
-        departureDate: formData.departureDate,
-        arrivalDate: formData.arrivalDate,
-        price: selectedFlight.price.total,
-        currency: selectedFlight.price.currency,
-        adults: adults,
-        kids: kids,
-        travelers: travelers,
-        paymentToken: token, // Send only the token, not raw card data
-      });
+      // const response = await axios.post("http://localhost:8000/flights/book/", {
+      //   user_id: user?.id,
+      //   departure: formData.departure,
+      //   arrival: formData.arrival,
+      //   departureDate: formData.departureDate,
+      //   arrivalDate: formData.arrivalDate,
+      //   price: selectedFlight?.price.total,
+      //   currency: selectedFlight?.price.currency,
+      //   adults: adults,
+      //   kids: kids,
+      //   travelers: travelers,
+      //   paymentToken: token, // Send only the token, not raw card data
+      // });
+      const response = await axios.post(
+        "http://localhost:8000/flights/book/",
+        data
+      );
+      console.log(response);
 
-      if (response.status === 200) {
-        setBookingSuccess(true);
-        setBookingError(null); // Clear error message if successful
-      } else {
-        throw new Error("Booking failed. Please try again.");
-      }
+      // if (response.status === 200) {
+      //   setBookingSuccess(true);
+      //   setBookingError(null); // Clear error message if successful
+      // } else {
+      //   throw new Error("Booking failed. Please try again.");
+      // }
     } catch (error) {
       setBookingError("Booking failed. Please try again."); // Store error message
     } finally {
-      setSelectedFlight(null); // ✅ Always close booking modal
+      setSelectedFlight(null);
     }
   };
 

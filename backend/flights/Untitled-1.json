@@ -1,0 +1,120 @@
+[
+{
+"type": "flight-offer",
+"id": "1",
+"source": "GDS",
+"instantTicketingRequired": false,
+"nonHomogeneous": false,
+"oneWay": false,
+"isUpsellOffer": false,
+"lastTicketingDate": "2025-02-16",
+"lastTicketingDateTime": "2025-02-16",
+"numberOfBookableSeats": 4,
+"itineraries": [
+{
+"duration": "PT10H3M",
+"segments": [
+{
+"departure": {
+"iataCode": "JFK",
+"at": "2025-03-20T06:59:00"
+},
+"arrival": {
+"iataCode": "LAS",
+"terminal": "3",
+"at": "2025-03-20T09:28:00"
+},
+"carrierCode": "F9",
+"number": "3237",
+"aircraft": {
+"code": "32Q"
+},
+"operating": {
+"carrierCode": "F9"
+},
+"duration": "PT5H29M",
+"id": "1",
+"numberOfStops": 0,
+"blacklistedInEU": false
+},
+{
+"departure": {
+"iataCode": "LAS",
+"terminal": "3",
+"at": "2025-03-20T12:53:00"
+},
+"arrival": {
+"iataCode": "ONT",
+"at": "2025-03-20T14:02:00"
+},
+"carrierCode": "F9",
+"number": "1357",
+"aircraft": {
+"code": "321"
+},
+"operating": {
+"carrierCode": "F9"
+},
+"duration": "PT1H9M",
+"id": "2",
+"numberOfStops": 0,
+"blacklistedInEU": false
+}
+]
+}
+],
+"price": {
+"currency": "USD",
+"total": "69.94",
+"base": "41.84",
+"fees": [
+{
+"amount": "0.00",
+"type": "SUPPLIER"
+},
+{
+"amount": "0.00",
+"type": "TICKETING"
+}
+],
+"grandT otal": "69.94"
+},
+"pricingOptions": {
+"fareType": ["PUBLISHED"],
+"includedCheckedBagsOnly": false
+},
+"validatingAirlineCodes": ["F9"],
+"travelerPricings": [
+{
+"travelerId": "1",
+"fareOption": "STANDARD",
+"travelerType": "ADULT",
+"price": {
+"currency": "USD",
+"total": "69.94",
+"base": "41.84"
+},
+"fareDetailsBySegment": [
+{
+"segmentId": "1",
+"cabin": "ECONOMY",
+"fareBasis": "Z14VXP4",
+"brandedFare": "ECO",
+"brandedFareLabel": "STANDARD",
+"class": "Z"
+},
+{
+"segmentId": "2",
+"cabin": "ECONOMY",
+"fareBasis": "Z14VXP4",
+"brandedFare": "ECO",
+"brandedFareLabel": "STANDARD",
+"class": "Z"
+}
+]
+}
+]
+}
+]
+}
+}
