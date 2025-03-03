@@ -79,6 +79,7 @@ def book_flight(request):
             booking_response = amadeus.booking.flight_orders.post(confirm_flight, traveler)
 
             if booking_response.status_code == 201:
+                print(booking_response.data)
                 return JsonResponse(booking_response.data, status=201)
             return JsonResponse({"error": "Booking failed", "details": booking_response.body}, status=400)
         except (ResponseError, KeyError, AttributeError) as error:

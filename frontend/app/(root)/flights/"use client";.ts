@@ -57,39 +57,6 @@ interface Traveler {
   ];
 }
 
-const COUNTRY_LIST = [
-  { code: "US", name: "United States" },
-  { code: "CA", name: "Canada" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "FR", name: "France" },
-  { code: "DE", name: "Germany" },
-  { code: "IN", name: "India" },
-  { code: "CN", name: "China" },
-  { code: "JP", name: "Japan" },
-  { code: "AU", name: "Australia" },
-  { code: "BR", name: "Brazil" },
-  { code: "MX", name: "Mexico" },
-  { code: "ZA", name: "South Africa" },
-  { code: "RU", name: "Russia" },
-  { code: "KR", name: "South Korea" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "NL", name: "Netherlands" },
-  { code: "SE", name: "Sweden" },
-  { code: "CH", name: "Switzerland" },
-  { code: "SG", name: "Singapore" },
-  { code: "NZ", name: "New Zealand" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "TH", name: "Thailand" },
-  { code: "MY", name: "Malaysia" },
-  { code: "PH", name: "Philippines" },
-  { code: "ID", name: "Indonesia" },
-  { code: "EG", name: "Egypt" },
-  { code: "AR", name: "Argentina" },
-  { code: "NG", name: "Nigeria" },
-];
-
 export default function FlightSearch() {
   const [formData, setFormData] = useState({
     departure: "",
@@ -140,7 +107,6 @@ export default function FlightSearch() {
       ],
     },
   ]);
-  const [isLoading, setIsLoading] = useState(false);
 
   React.useEffect(() => {
     async function fetchUser() {
@@ -289,8 +255,6 @@ export default function FlightSearch() {
     // }
 
     try {
-      setIsLoading(true);
-      closeBookingModal();
       // Tokenizing payment details before sending
       const tokenResponse = await axios.post(
         "http://localhost:8000/flights/payments/tokenize/",
@@ -329,17 +293,16 @@ export default function FlightSearch() {
       );
       console.log(response);
 
-      if (response.status === 201) {
-        setBookingSuccess(true);
-        setBookingError(null); // Clear error message if successful
-      } else {
-        throw new Error("Booking failed. Please try again.");
-      }
+      // if (response.status === 200) {
+      //   setBookingSuccess(true);
+      //   setBookingError(null); // Clear error message if successful
+      // } else {
+      //   throw new Error("Booking failed. Please try again.");
+      // }
     } catch (error) {
       setBookingError("Booking failed. Please try again."); // Store error message
     } finally {
       setSelectedFlight(null);
-      setIsLoading(false);
     }
   };
 
@@ -547,18 +510,16 @@ export default function FlightSearch() {
                   />
 
                   {/* Gender */}
-                  <select
-                    className="w-full mt-2 p-2 border rounded-md"
+                  <Input
+                    className="w-full mt-2"
+                    type="text"
+                    placeholder="Gender"
                     value={traveler.gender}
                     onChange={(e) =>
                       handleTravelerChangeV2(index, "gender", e.target.value)
                     }
                     required
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="MALE">Male</option>
-                    <option value="FEMALE">Female</option>
-                  </select>
+                  />
 
                   {/* Email Address */}
                   <Input
@@ -705,8 +666,10 @@ export default function FlightSearch() {
                   />
 
                   {/* Issuance Country */}
-                  <select
-                    className="w-full mt-2 p-2 border rounded-md"
+                  <Input
+                    className="w-full mt-2"
+                    type="text"
+                    placeholder="Issuance Country"
                     value={traveler.documents[0].issuanceCountry}
                     onChange={(e) =>
                       handleTravelerChangeV2(
@@ -716,18 +679,13 @@ export default function FlightSearch() {
                       )
                     }
                     required
-                  >
-                    <option value="">Select Issuance Country</option>
-                    {COUNTRY_LIST.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
 
                   {/* Validity Country */}
-                  <select
-                    className="w-full mt-2 p-2 border rounded-md"
+                  <Input
+                    className="w-full mt-2"
+                    type="text"
+                    placeholder="Validity Country"
                     value={traveler.documents[0].validityCountry}
                     onChange={(e) =>
                       handleTravelerChangeV2(
@@ -737,18 +695,13 @@ export default function FlightSearch() {
                       )
                     }
                     required
-                  >
-                    <option value="">Select Validity Country</option>
-                    {COUNTRY_LIST.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
 
                   {/* Nationality */}
-                  <select
-                    className="w-full mt-2 p-2 border rounded-md"
+                  <Input
+                    className="w-full mt-2"
+                    type="text"
+                    placeholder="Nationality"
                     value={traveler.documents[0].nationality}
                     onChange={(e) =>
                       handleTravelerChangeV2(
@@ -758,14 +711,7 @@ export default function FlightSearch() {
                       )
                     }
                     required
-                  >
-                    <option value="">Select Nationality</option>
-                    {COUNTRY_LIST.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
 
                   {/* Holder (Boolean Field) */}
                   <div className="mt-2 flex items-center space-x-2">
@@ -848,51 +794,6 @@ export default function FlightSearch() {
             >
               Close
             </button>
-          </div>
-        </div>
-      )}
-
-      {bookingSuccess && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-bold text-green-600">
-              Booking Successful!
-            </h2>
-            <p>Your flight has been successfully booked.</p>
-            <button
-              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg"
-              onClick={() => setBookingSuccess(null)}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <svg
-              className="animate-spin h-8 w-8 text-blue-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8H4z"
-              ></path>
-            </svg>
-            <p className="mt-4 text-gray-700">Processing your booking...</p>
           </div>
         </div>
       )}
