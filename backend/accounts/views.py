@@ -64,6 +64,7 @@ class CustomUserLoginView(APIView):
                 user.account_locked_until = None
                 user.save()
                 token, created = Token.objects.get_or_create(user=user)
+                print(token)
                 return Response({'token': token.key})
             else:
                 user.failed_login_attempts += 1

@@ -144,13 +144,16 @@ export default function FlightSearch() {
 
   React.useEffect(() => {
     async function fetchUser() {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      console.log(token);
       if (!token) return;
 
       try {
         const response = await axios.get("http://localhost:8000/auth/user/", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log(response.data);
         setUser(response.data);
       } catch (error) {
         console.error("User not authenticated:", error);
