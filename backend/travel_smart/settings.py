@@ -15,6 +15,9 @@ from decouple import config
 import dj_database_url
 import os
 
+AMADEUS_API_KEY = config('AMADEUS_API_KEY')
+AMADEUS_API_SECRET = config('AMADEUS_API_SECRET')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,6 +59,7 @@ INSTALLED_APPS = [
     # My apps
     'accounts',
     'settings',
+    'flights',
 ]
 
 MIDDLEWARE = [
@@ -198,7 +202,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
-       'rest_framework.permissions.IsAuthenticated',
     ],
 }
 

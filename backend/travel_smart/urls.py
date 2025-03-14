@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('accounts.urls')),
     path('auth/login/', include('dj_rest_auth.urls')),
     path('settings/', include('settings.urls')),
+    path('flights/', include('flights.urls')),
 ]

@@ -1,187 +1,291 @@
 "use client";
 
-import React, { useState } from 'react';
-import { label } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
-import Input from '@/components/ui/Input';
+import { format } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import CustomInput from '@/components/CustomInput';
 
-const FlightSearch = () => {
-  const [formData, setFormData] = useState({
+// Define interfaces for our data structures
+interface FormData {
+  origin: string;
+  destination: string;
+  departure_date: string;
+  return_date: string;
+  passengers: number;
+  cabin_class: 'ECONOMY' | 'PREMIUM_ECONOMY' | 'BUSINESS' | 'FIRST';
+}
+
+interface FlightSegment {
+  departure: {
+    airport: string;
+    terminal?: string;
+    time: string;
+  };
+  arrival: {
+    airport: string;
+    terminal?: string;
+    time: string;
+  };
+  carrierCode: string;
+  flightNumber: string;
+  aircraft?: string;
+  duration: string;
+}
+
+interface Itinerary {
+  duration: string;
+  segments: FlightSegment[];
+}
+
+interface Flight {
+  price: {
+    total: string;
+    currency: string;
+  };
+  outbound: Itinerary;
+  return?: Itinerary;
+}
+
+// Define props interface for Input component
+interface CustomInputProps {
+  label: string;
+  name: string;
+  value: string | number;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  required?: boolean;
+  type?: string;
+}
+
+const FlightSearch: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     origin: '',
     destination: '',
     departure_date: '',
     return_date: '',
     passengers: 1,
-    cabin_class: '',
+    cabin_class: 'ECONOMY'
   });
-  const [flights, setFlights] = useState([]);
+  
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const formatDuration = (duration: string): string => {
+    if (!duration) return '';
+    const hours = duration.match(/(\d+)H/)?.[1] || '0';
+    const minutes = duration.match(/(\d+)M/)?.[1] || '0';
+    return `${hours}h ${minutes}m`;
+  };
+
+  const formatDateTime = (dateTimeString: string): string => {
+    if (!dateTimeString) return '';
+    const date = new Date(dateTimeString);
+    return format(date, 'MMM d, h:mm a');
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
     try {
       const response = await axios.post('http://localhost:8000/flights/search/', formData);
       setFlights(response.data.flights);
     } catch (error) {
-      console.error('Failed to fetch flights:', error);
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.error || 'Failed to fetch flights');
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
+  const renderFlightSegments = (segments: FlightSegment[]) => (
+    <div className="space-y-2">
+      {segments.map((segment, idx) => (
+        <div key={idx} className="flex items-center space-x-4 text-sm">
+          <div className="w-20">
+            {segment.carrierCode} {segment.flightNumber}
+          </div>
+          <div className="flex-1">
+            <div className="flex justify-between">
+              <span>
+                {segment.departure.airport} 
+                {segment.departure.terminal ? `(T${segment.departure.terminal})` : ''}
+              </span>
+              <span className="text-gray-500">→</span>
+              <span>
+                {segment.arrival.airport} 
+                {segment.arrival.terminal ? `(T${segment.arrival.terminal})` : ''}
+              </span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>{formatDateTime(segment.departure.time)}</span>
+              <span className="text-xs">{formatDuration(segment.duration)}</span>
+              <span>{formatDateTime(segment.arrival.time)}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className='min-h-screen pt-10'>
-      <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-md">
-        <h1 className="text-3xl font-bold mb-6">Find Your Perfect Flight</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* From and To */}
-          <div className="flex space-x-4 w-full">
-            <div className="w-1/2">
-              <Input
-                label="From"
-                type="text"
-                id="origin"
-                placeholder="Origin city or airport"
-                value={formData.origin}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="w-1/2">
-              <Input
-                label="To"
-                type="text"
-                id="destination"
-                placeholder="Destination city or airport"
-                value={formData.destination}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
+    <div className="min-h-screen pt-10 px-4">
+      <div className="max-w-4xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Find Your Perfect Flight</CardTitle>
+            <CardDescription>Search for the best flight deals</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomInput
+                  label="From"
+                  name="origin"
+                  value={formData.origin}
+                  onChange={handleChange}
+                  placeholder="Airport code (e.g., NYC)"
+                  required
+                />
+                <CustomInput
+                  label="To"
+                  name="destination"
+                  value={formData.destination}
+                  onChange={handleChange}
+                  placeholder="Airport code (e.g., LON)"
+                  required
+                />
+              </div>
 
-          {/* Departure and Return */}
-          <div className="flex space-x-4">
-            <div className="w-1/2">
-              <Input
-                label="Departure Date"
-                type="date"
-                id="departure_date"
-                placeholder="Select departure date"
-                value={formData.departure_date}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="w-1/2">
-              <Input
-                label="Return Date"
-                type="date"
-                id="return_date"
-                placeholder="Select return date"
-                value={formData.return_date}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomInput
+                  label="Departure Date"
+                  name="departure_date"
+                  type="date"
+                  value={formData.departure_date}
+                  onChange={handleChange}
+                  required
+                />
+                <CustomInput
+                  label="Return Date"
+                  name="return_date"
+                  type="date"
+                  value={formData.return_date}
+                  onChange={handleChange}
+                />
+              </div>
 
-          {/* Passengers and Cabin Class */}
-          <div className="flex space-x-4">
-            <div className="flex flex-col w-1/2">
-              <label htmlFor="passengers" className="text-sm font-medium text-gray-700 mb-1">Passengers</label>
-              <select
-                id="passengers"
-                name="passengers"
-                value={formData.passengers}
-                onChange={handleChange}
-                className="border p-3 rounded"
-                required
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Passengers
+                  </label>
+                  <select
+                    name="passengers"
+                    value={formData.passengers}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2"
+                    required
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                      <option key={num} value={num}>{num} Passenger{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cabin Class
+                  </label>
+                  <select
+                    name="cabin_class"
+                    value={formData.cabin_class}
+                    onChange={handleChange}
+                    className="w-full border rounded-md p-2"
+                    required
+                  >
+                    <option value="ECONOMY">Economy</option>
+                    <option value="PREMIUM_ECONOMY">Premium Economy</option>
+                    <option value="BUSINESS">Business</option>
+                    <option value="FIRST">First Class</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 flex items-center justify-center disabled:bg-blue-400"
               >
-                <option value="">Select passengers</option>
-                {[...Array(10).keys()].map((n) => (
-                  <option key={n + 1} value={n + 1}>
-                    {n + 1}
-                  </option>
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Searching...
+                  </>
+                ) : (
+                  'Search Flights'
+                )}
+              </button>
+            </form>
+
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
+                {error}
+              </div>
+            )}
+
+            {flights.length > 0 && (
+              <div className="mt-8 space-y-4">
+                {flights.map((flight, index) => (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-lg font-medium">
+                          {formData.origin} → {formData.destination}
+                        </h3>
+                        <div className="text-xl font-bold">
+                          {flight.price.currency} {flight.price.total}
+                        </div>
+                      </div>
+
+                      {flight.outbound && (
+                        <div className="mb-4">
+                          <h4 className="font-medium mb-2">Outbound Flight</h4>
+                          {renderFlightSegments(flight.outbound.segments)}
+                        </div>
+                      )}
+
+                      {flight.return && (
+                        <div>
+                          <h4 className="font-medium mb-2">Return Flight</h4>
+                          {renderFlightSegments(flight.return.segments)}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 ))}
-              </select>
-            </div>
-            <div className="flex flex-col w-1/2">
-            <label htmlFor="cabin_class" className="text-sm font-medium text-gray-700 mb-1">Cabin Class</label>
-              <select
-                id="cabin_class"
-                name="cabin_class"
-                value={formData.cabin_class}
-                onChange={handleChange}
-                className="border p-3 rounded"
-                required
-              >
-                <option value="">Select class</option>
-                <option value="economy">Economy</option>
-                <option value="business">Business</option>
-                <option value="first">First Class</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Search Button */}
-          <button
-            type="submit"
-            className="w-full bg-black text-white p-3 rounded flex items-center justify-center hover:bg-gray-800"
-          >
-            ✈️ Search Flights
-          </button>
-        </form>
-
-        {/* Filters */}
-        <div className="mt-6">
-          <h2 className="text-xl font-bold mb-4">Filters</h2>
-          <div className="flex space-x-4">
-            <div className="flex flex-col w-1/2">
-              <label htmlFor="airlines" className="text-sm font-medium text-gray-700 mb-1">Airlines</label>
-              <select
-                id="airlines"
-                name="airlines"
-                // value={formData.cabin_class}
-                // onChange={handleChange}
-                className="border p-3 rounded"
-                required
-              >
-                <option value="">All Airlines</option>
-                <option value="airline1">Airline 1</option>
-                <option value="airline2">Airline 2</option>
-              </select>
-            </div>
-            <div className="flex flex-col w-1/2">
-              <label htmlFor="stops" className="text-sm font-medium text-gray-700 mb-1">Stops</label>
-              <select
-                id="stops"
-                name="stops"
-                // value={formData.cabin_class}
-                // onChange={handleChange}
-                className="border p-3 rounded"
-                required
-              >
-                <option value="">Any</option>
-                <option value="nonstop">Non-stop</option>
-                <option value="one_stop">1 Stop</option>
-                <option value="two_plus_stops">2+ Stops</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Search results */}
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Search Results</h2>
-          <ul className="list-disc pl-6">
-            {flights.map((flight, index) => (
-              <li key={index} className="mb-2">
-                {flight.airline} - {flight.flight_number} - {flight.departure} → {flight.arrival}
-              </li>
-            ))}
-          </ul>
-        </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
