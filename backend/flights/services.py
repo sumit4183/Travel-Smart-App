@@ -90,7 +90,7 @@ class AmadeusService:
 
         url = f'{self.base_url}/shopping/flight-offers'
         response = requests.post(url, headers=headers, json=payload)
-        
+
         if response.status_code == 200:
             return self.format_flight_results(response.json())
         elif response.status_code == 401:
@@ -117,7 +117,8 @@ class AmadeusService:
                     'currency': price.get('currency', 'USD')
                 },
                 'outbound': self.format_itinerary(itineraries[0]) if itineraries else None,
-                'return': self.format_itinerary(itineraries[1]) if len(itineraries) > 1 else None
+                'return': self.format_itinerary(itineraries[1]) if len(itineraries) > 1 else None,
+                'offer': offer
             }
             formatted_flights.append(flight_offer)
             
