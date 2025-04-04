@@ -1,6 +1,7 @@
 import json
 import random
 import string
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
@@ -9,9 +10,14 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from amadeus import Client, ResponseError
 from django.conf import settings
-from .models import FlightSearch
+from django.contrib.auth.decorators import login_required 
+
+from .models import FlightSearch, Booking
 from .serializers import FlightSearchSerializer
 from .services import AmadeusService
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class FlightSearchView(APIView):
     ermission_classes = [AllowAny]  
@@ -60,6 +66,7 @@ def book_flight(request):
             data = json.loads(request.body)
             flight = data.get("flight")  
             traveler = data.get("traveler")
+            userID = data.get("userID")
             # Step 1: Confirm flight pricing
             pricing_response = amadeus.shopping.flight_offers.pricing.post(flight)
 
@@ -72,7 +79,39 @@ def book_flight(request):
             booking_response = amadeus.booking.flight_orders.post(confirm_flight, traveler)
 
             if booking_response.status_code == 201:
-                return JsonResponse(booking_response.data, status=201)
+                booking_data = booking_response.data
+                # Extract booking details
+                flight_offer = booking_data['flightOffers'][0]
+                booking_reference = booking_data['associatedRecords'][0]['reference']
+                departure = flight_offer['itineraries'][0]['segments'][0]['departure']['iataCode']
+                arrival = flight_offer['itineraries'][0]['segments'][-1]['arrival']['iataCode']
+                departure_date = flight_offer['itineraries'][0]['segments'][0]['departure']['at'].split("T")[0]
+                arrival_date = flight_offer['itineraries'][0]['segments'][-1]['arrival']['at'].split("T")[0]
+                price = float(flight_offer['price']['grandTotal'])
+                currency = flight_offer['price']['currency']
+                # Save to Booking model
+                try:
+                    user = User.objects.get(id=userID)
+                    Booking.objects.create(
+                        user=user,
+                        departure=departure,
+                        arrival=arrival,
+                        departure_date=departure_date,
+                        arrival_date=arrival_date,
+                        price=price,
+                        currency=currency,
+                        travelers=traveler,
+                        booking_reference=booking_reference,
+                        status="confirmed"
+                    )
+                    print("Booking saved successfully") 
+                    return JsonResponse(booking_response.data, status=201) 
+                except User.DoesNotExist:
+                    return JsonResponse({"error": "User not found"}, status=404)
+                except IntegrityError as e:
+                    print("database integrity errror")
+                except Exception as e:
+                    print("An error occurred")
             return JsonResponse({"error": "Booking failed", "details": booking_response.body}, status=400)
         except (ResponseError, KeyError, AttributeError) as error:
             return JsonResponse({"error": str(error)}, status=400)
@@ -106,3 +145,38 @@ def tokenize_payment(request):
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
+
+@csrf_exempt    
+def get_upcoming_trips(request):
+    try:
+        # Ensure the user is authenticated
+        data = json.loads(request.body)
+        user = data.get("user")  
+        # if not user.is_authenticated:
+        #     return JsonResponse({"error": "User is not authenticated"}, status=401)
+
+        # Filter bookings for the authenticated user
+        upcoming_trips = Booking.objects.filter(
+            user_id=user["id"],
+            status="confirmed"
+        ).order_by("departure_date")
+
+        # Format trip data
+        trip_data = [
+            {
+                "departure": trip.departure,
+                "arrival": trip.arrival,
+                "departure_date": trip.departure_date.strftime("%Y-%m-%d"),
+                "arrival_date": trip.arrival_date.strftime("%Y-%m-%d") if trip.arrival_date else None,
+                "price": str(trip.price),
+                "currency": trip.currency,
+                "booking_reference": trip.booking_reference
+            }
+            for trip in upcoming_trips
+        ]
+
+        return JsonResponse({"upcomingTrips": trip_data}, status=200)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": str(e)}, status=500)

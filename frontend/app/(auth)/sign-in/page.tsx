@@ -1,25 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const SignIn = () => {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (token) {
-        const response = await axios.get('http://localhost:8000/auth/status/', {
+        const response = await axios.get("http://localhost:8000/auth/status/", {
           headers: { Authorization: `Token ${token}` },
         });
         if (response.data.is_authenticated) {
-          router.push('/profile');
+          router.push("/profile");
         }
       }
     };
@@ -31,19 +32,20 @@ const SignIn = () => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:8000/auth/login/', {
+      const response = await axios.post("http://localhost:8000/auth/login/", {
         email,
         password,
       });
       const token = response.data.token;
+      console.log(token);
       if (rememberMe) {
-        localStorage.setItem('token', token);
+        localStorage.setItem("token", token);
       } else {
-        sessionStorage.setItem('token', token);
+        sessionStorage.setItem("token", token);
       }
-      router.push('/');
+      router.push("/");
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed');
+      setError(err.response?.data?.detail || "Login failed");
     }
   };
 
@@ -77,7 +79,10 @@ const SignIn = () => {
           />
           <label htmlFor="rememberMe">Remember Me</label>
         </div>
-        <button type="submit" className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full">
+        <button
+          type="submit"
+          className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full"
+        >
           Sign In
         </button>
         {error && <p className="text-red-500">{error}</p>}

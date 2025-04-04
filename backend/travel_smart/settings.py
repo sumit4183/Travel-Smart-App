@@ -15,10 +15,8 @@ from decouple import config
 import dj_database_url
 import os
 
-# AMADEUS_API_KEY = config('AMADEUS_API_KEY')
-# AMADEUS_API_SECRET = config('AMADEUS_API_SECRET')
-AMADEUS_API_KEY='jy5GuajJ3ntIZ4PgUOypRGLdRaqiqyZ0'
-AMADEUS_API_SECRET='m0XD3QfO80p5UzpI'
+AMADEUS_API_KEY = config('AMADEUS_API_KEY')
+AMADEUS_API_SECRET = config('AMADEUS_API_SECRET')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

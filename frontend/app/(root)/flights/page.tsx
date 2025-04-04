@@ -144,17 +144,6 @@ interface Flight {
   offer: FlightOffer;
 }
 
-// Define props interface for Input component
-interface CustomInputProps {
-  label: string;
-  name: string;
-  value: string | number;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  required?: boolean;
-  type?: string;
-}
-
 interface Traveler {
   id: string;
   dateOfBirth: string;
@@ -230,6 +219,7 @@ const FlightSearch: React.FC = () => {
     expiryDate: "",
     cvv: "",
   });
+  const [userID, setUserID] = useState(null);
 
   React.useEffect(() => {
     const totalTravelers = formData.passengers;
@@ -266,6 +256,31 @@ const FlightSearch: React.FC = () => {
       )
     );
   }, [formData.passengers]);
+
+  React.useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const token =
+          localStorage.getItem("token") || sessionStorage.getItem("token");
+
+        if (!token) {
+          setError("You are not authenticated.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get("http://localhost:8000/auth/user/", {
+          headers: { Authorization: `Token ${token}` },
+        });
+        console.log(response.data);
+        setUserID(response.data.id);
+      } catch (err) {
+        setError("Failed to fetch user details.");
+      }
+    };
+
+    fetchUserID();
+  }, []);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -338,10 +353,10 @@ const FlightSearch: React.FC = () => {
   };
 
   const confirmBooking = async () => {
-    // if (!selectedFlight || !user) {
-    //   setBookingError("You must be logged in to book a flight.");
-    //   return;
-    // }
+    if (!selectedFlight || !userID) {
+      setBookingError("You must be logged in to book a flight.");
+      return;
+    }
 
     try {
       setBooking(true);
@@ -350,7 +365,10 @@ const FlightSearch: React.FC = () => {
       const data = {
         flight: selectedFlight?.offer,
         traveler: travelersV2,
+        userID: userID,
       };
+      console.log("User ID: " + userID);
+
       const response = await axios.post(
         "http://localhost:8000/flights/book/",
         data
