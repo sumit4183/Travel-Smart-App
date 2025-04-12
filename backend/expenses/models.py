@@ -17,12 +17,12 @@ class Trip(models.Model):
 
 class Expense(models.Model):
     CATEGORY_CHOICES = [
-        ("flights", "Flights"),
-        ("hotels", "Hotels"),
-        ("food", "Food"),
-        ("transport", "Transport"),
-        ("shopping", "Shopping"),
-        ("misc", "Miscellaneous"),
+        ("Flights", "Flights"),
+        ("Hotels", "Hotels"),
+        ("Food", "Food"),
+        ("Transport", "Transport"),
+        ("Shopping", "Shopping"),
+        ("Misc", "Miscellaneous"),
     ]
 
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="expenses")

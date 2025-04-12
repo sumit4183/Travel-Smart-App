@@ -7,6 +7,8 @@ class ExpenseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TripSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.id')
+    
     expenses = ExpenseSerializer(many=True, read_only=True)
 
     class Meta:

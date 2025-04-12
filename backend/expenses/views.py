@@ -47,7 +47,7 @@ def trip_summary(request, trip_id):
     return Response({
         "trip": trip.name,
         "budget": float(trip.budget),
-        "total_spent": total_spent,
-        "remaining": float(trip.budget) - total_spent,
-        "category_breakdown": category_breakdown
+        "total_spent": float(total_spent),
+        "remaining": float(trip.budget) - float(total_spent),
+        "category_breakdown": {k: float(v) for k, v in category_breakdown.items()}
     })

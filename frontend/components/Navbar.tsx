@@ -16,7 +16,7 @@ const Navbar = () => {
     { id: "hotels", title: "Hotels", href: "/hotels" },
     { id: "itineraries", title: "Itineraries", href: "/itineraries" },
     { id: "packing-assistant", title: "Packing Assistant", href: "/packing-assistant" },
-    { id: "expense-tracker", title: "Expense Tracker", href: "/expense-tracker" },
+    { id: "expense-tracker", title: "Expense Tracker", href: "/expenses" },
   ];
   
   // Check login status on mount
