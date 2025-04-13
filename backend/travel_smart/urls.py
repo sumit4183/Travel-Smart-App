@@ -24,6 +24,6 @@ urlpatterns = [
     path('auth/login/', include('dj_rest_auth.urls')),
     path('settings/', include('settings.urls')),
     path('flights/', include('flights.urls')),
-    path('expenses/', include('expenses.urls')),
+    path('api/', include('expenses.urls')),
 
 ]
