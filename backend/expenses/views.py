@@ -1,14 +1,15 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 
-from .models import Trip, Expense
-from .serializers import TripSerializer, ExpenseSerializer
+from .models import Trip, Expense, Flight, Hotel
+from .serializers import TripSerializer, ExpenseSerializer, FlightSerializer, HotelSerializer
 
 class TripViewSet(viewsets.ModelViewSet):
     serializer_class = TripSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Trip.objects.filter(user=self.request.user)
@@ -44,7 +45,7 @@ class TripViewSet(viewsets.ModelViewSet):
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     serializer_class = ExpenseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
@@ -54,3 +55,40 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         if trip.user != self.request.user:
             raise PermissionDenied("You don't own this trip.")
         serializer.save(user=self.request.user)
+
+class FlightViewSet(viewsets.ModelViewSet):
+    queryset = Flight.objects.all()
+    serializer_class = FlightSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Flight.objects.filter(trip__user=self.request.user)
+        trip_id = self.request.query_params.get('trip')
+        if trip_id:
+            queryset = queryset.filter(trip__id=trip_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        trip = serializer.validated_data['trip']
+        if serializer.validated_data['trip'].user != self.request.user:
+            raise PermissionDenied("You do not own this trip.")
+        serializer.save()
+
+
+class HotelViewSet(viewsets.ModelViewSet):
+    queryset = Hotel.objects.all()
+    serializer_class = HotelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Hotel.objects.filter(trip__user=self.request.user)
+        trip_id = self.request.query_params.get('trip')
+        if trip_id:
+            queryset = queryset.filter(trip__id=trip_id)
+        return queryset
+        # return Hotel.objects.filter(trip__user=self.request.user)
+
+    def perform_create(self, serializer):
+        if serializer.validated_data['trip'].user != self.request.user:
+            raise PermissionDenied("You do not own this trip.")
+        serializer.save()

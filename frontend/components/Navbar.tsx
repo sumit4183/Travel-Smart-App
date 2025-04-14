@@ -75,6 +75,9 @@ const Navbar = () => {
               <Link href="/profile" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
                 Profile
               </Link>
+              <Link href="/trips" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                My Trips
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium"
@@ -139,6 +142,14 @@ const Navbar = () => {
                     onClick={() => setIsOpen(false)}
                   >
                     Profile
+                  </p>
+                </Link>
+                <Link href="/trips">
+                  <p
+                    className="text-gray-400 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    My Trips
                   </p>
                 </Link>
                 <button
