@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -12,7 +13,7 @@ class Trip(models.Model):
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     notes = models.TextField(blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.name} ({self.destination})"
@@ -30,14 +31,14 @@ class Expense(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="expenses")
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, default="Untitled")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default="USD")
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     note = models.TextField(blank=True)
     date = models.DateField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.amount} {self.currency} on {self.date}"
