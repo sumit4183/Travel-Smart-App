@@ -77,7 +77,7 @@ const TripExpensePage = () => {
     };
 
     fetchData();
-  }, [tripId]);
+  }, [tripId, router, token]);
 
   const refreshExpenses = async () => {
     try {
@@ -96,7 +96,7 @@ const TripExpensePage = () => {
   };  
 
   return (
-    <div className="min-h-screen bg-white p-6 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-white p-6 max-w-5xl mx-auto pt-10">
       {loading && <p>Loading trip...</p>}
       {!loading && trip && (
         <>

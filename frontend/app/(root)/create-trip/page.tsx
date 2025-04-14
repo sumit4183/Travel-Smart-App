@@ -59,7 +59,7 @@ const CreateTripPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 max-w-xl mx-auto">
+    <div className="min-h-screen p-6 max-w-xl mx-auto py-12 mt-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Create a New Trip</h1>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}

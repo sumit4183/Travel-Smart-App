@@ -30,6 +30,7 @@ export default function EditTripPage() {
         });
         setFormData(res.data);
       } catch (err) {
+        console.error("Failed to load trip.", err);
         setError("Failed to load trip.");
       } finally {
         setLoading(false);
@@ -37,7 +38,7 @@ export default function EditTripPage() {
     };
 
     fetchTrip();
-  }, [tripId]);
+  }, [tripId, token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -52,14 +53,15 @@ export default function EditTripPage() {
       await axios.put(`http://localhost:8000/api/trips/${tripId}/`, formData, {
         headers: { Authorization: `Token ${token}` },
       });
-      router.push("/trips");
+      router.push(`/trips/${tripId}`);
     } catch (err) {
+      console.error("Failed to update trip.", err);
       setError("Failed to update trip.");
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div className="max-w-2xl mx-auto mt-20 py-12 p-6 rounded">
       <h1 className="text-2xl font-bold mb-4">Edit Trip</h1>
 
       {loading ? (
@@ -76,6 +78,7 @@ export default function EditTripPage() {
               value={formData.name}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Enter trip name"
               required
             />
           </div>
@@ -88,6 +91,7 @@ export default function EditTripPage() {
               value={formData.destination}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2 text-sm"
+              placeholder="Enter destination"
               required
             />
           </div>
@@ -101,6 +105,7 @@ export default function EditTripPage() {
                 value={formData.start_date}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2 text-sm"
+                title="Start Date"
                 required
               />
             </div>
@@ -112,6 +117,8 @@ export default function EditTripPage() {
                 value={formData.end_date}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2 text-sm"
+                title="End Date"
+                placeholder="Select end date"
                 required
               />
             </div>
@@ -120,12 +127,14 @@ export default function EditTripPage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Budget</label>
             <input
-              type="number"
-              name="budget"
-              value={formData.budget}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 text-sm"
-              required
+                type="number"
+                name="budget"
+                value={formData.budget}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2 text-sm"
+                title="Budget"
+                placeholder="Enter budget"
+                required
             />
           </div>
 
@@ -137,6 +146,8 @@ export default function EditTripPage() {
               onChange={handleChange}
               rows={3}
               className="w-full border rounded px-3 py-2 text-sm"
+              title="Notes"
+              placeholder="Enter any additional notes"
             />
           </div>
 

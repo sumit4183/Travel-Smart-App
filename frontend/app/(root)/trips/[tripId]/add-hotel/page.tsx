@@ -49,7 +49,7 @@ export default function AddHotelToTripPage() {
           },
         }
       );
-      router.push("/trips");
+      router.push(`/trips/${tripId}`);
     } catch (err) {
       console.error("Failed to save hotel:", err);
       setError("Failed to save hotel.");
@@ -59,7 +59,8 @@ export default function AddHotelToTripPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div className="max-w-2xl mx-auto mt-20 py-12 p-6 rounded">
+
       <h1 className="text-2xl font-bold mb-4">Add Hotel to Trip</h1>
 
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -101,6 +102,7 @@ export default function AddHotelToTripPage() {
               value={formData.check_in}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+              title="Select check-in date"
               required
             />
           </div>
@@ -112,6 +114,7 @@ export default function AddHotelToTripPage() {
               value={formData.check_out}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+              title="Select check-out date"
               required
             />
           </div>

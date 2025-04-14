@@ -32,6 +32,7 @@ export default function EditHotelPage() {
         });
         setFormData(res.data);
       } catch (err) {
+        console.error("Failed to load hotel.", err);
         setError("Failed to load hotel.");
       } finally {
         setLoading(false);
@@ -39,7 +40,7 @@ export default function EditHotelPage() {
     };
 
     fetchHotel();
-  }, [hotelId]);
+  }, [hotelId, token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -59,12 +60,13 @@ export default function EditHotelPage() {
       });
       router.push(`/trips/${tripId}`);
     } catch (err) {
+      console.error("Failed to update hotel.", err);
       setError("Failed to update hotel.");
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div className="max-w-2xl mx-auto mt-20 py-12 p-6 rounded">
       <h1 className="text-2xl font-bold mb-4">Edit Hotel</h1>
       {loading ? (
         <p>Loading...</p>
@@ -80,6 +82,7 @@ export default function EditHotelPage() {
               value={formData.name}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              placeholder="Enter hotel name"
               required
             />
           </div>
@@ -92,6 +95,7 @@ export default function EditHotelPage() {
               value={formData.location}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              placeholder="Enter hotel location"
               required
             />
           </div>
@@ -105,6 +109,7 @@ export default function EditHotelPage() {
                 value={formData.check_in}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                title="Select check-in date"
                 required
               />
             </div>
@@ -117,6 +122,7 @@ export default function EditHotelPage() {
                 value={formData.check_out}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                title="Select check-out date"
                 required
               />
             </div>
@@ -130,6 +136,8 @@ export default function EditHotelPage() {
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
               rows={2}
+              placeholder="Enter any notes"
+              title="Notes"
             />
           </div>
 

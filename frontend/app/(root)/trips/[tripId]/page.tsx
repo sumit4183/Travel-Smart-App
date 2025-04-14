@@ -75,7 +75,7 @@ export default function TripDetailPage() {
     };
 
     fetchTripDetails();
-  }, [tripId]);
+  }, [tripId, token]);
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this trip?")) return;
@@ -85,6 +85,7 @@ export default function TripDetailPage() {
       });
       router.push("/trips");
     } catch (err) {
+      console.error("Failed to delete trip:", err);
       alert("Failed to delete trip.");
     }
   };
@@ -98,12 +99,9 @@ export default function TripDetailPage() {
       });
   
       // Update local state
-      setFlights((prev) => {
-        const updated = { ...prev };
-        updated[tripId] = (updated[tripId] || []).filter((f) => f.id !== flightId);
-        return updated;
-      });
+      setFlights((prev) => prev.filter((f) => f.id !== flightId));
     } catch (err) {
+      console.error("Failed to delete flight.", err);
       alert("Failed to delete flight.");
     }
   };
@@ -117,12 +115,9 @@ export default function TripDetailPage() {
       });
   
       // Update local state
-      setHotels((prev) => {
-        const updated = { ...prev };
-        updated[tripId] = (updated[tripId] || []).filter((h) => h.id !== hotelId);
-        return updated;
-      });
+      setHotels((prev) => prev.filter((h) => h.id !== hotelId));
     } catch (err) {
+      console.error("Failed to delete hotel.", err);
       alert("Failed to delete hotel.");
     }
   };  

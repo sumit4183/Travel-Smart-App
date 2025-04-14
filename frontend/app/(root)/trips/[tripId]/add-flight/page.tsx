@@ -49,7 +49,7 @@ export default function AddFlightToTripPage() {
           headers: { Authorization: `Token ${token}` },
         }
       );
-      router.push("/trips");
+      router.push(`/trips/${tripId}`);
     } catch (err) {
       console.error("Error creating flight:", err);
       setError("Failed to create flight.");
@@ -59,7 +59,7 @@ export default function AddFlightToTripPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div className="max-w-2xl mx-auto mt-20 py-12 p-6 rounded">
       <h1 className="text-2xl font-bold mb-4">Add Flight to Trip</h1>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}

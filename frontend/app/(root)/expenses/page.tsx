@@ -49,7 +49,7 @@ const ExpenseTripsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8 pt-10">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-3xl font-bold text-gray-800">Select a Trip to Track Expenses</h1>

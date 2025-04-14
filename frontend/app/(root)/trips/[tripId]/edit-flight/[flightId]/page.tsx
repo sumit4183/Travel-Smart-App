@@ -34,6 +34,7 @@ export default function EditFlightPage() {
         });
         setFormData(res.data);
       } catch (err) {
+        console.error("Failed to load flight.", err);
         setError("Failed to load flight.");
       } finally {
         setLoading(false);
@@ -41,7 +42,7 @@ export default function EditFlightPage() {
     };
 
     fetchFlight();
-  }, [flightId]);
+  }, [flightId, token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -61,12 +62,13 @@ export default function EditFlightPage() {
       });
       router.push(`/trips/${tripId}`);
     } catch (err) {
+      console.error("Failed to update flight.", err);
       setError("Failed to update flight.");
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div className="max-w-2xl mx-auto mt-20 py-12 p-6 rounded">
       <h1 className="text-2xl font-bold mb-4">Edit Flight</h1>
       {loading ? (
         <p>Loading...</p>
@@ -82,6 +84,7 @@ export default function EditFlightPage() {
               value={formData.airline}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              placeholder="Enter airline name"
               required
             />
           </div>
@@ -94,6 +97,7 @@ export default function EditFlightPage() {
               value={formData.flight_number}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              placeholder="Enter flight number"
               required
             />
           </div>
@@ -107,6 +111,8 @@ export default function EditFlightPage() {
                 value={formData.departure_airport}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                placeholder="Enter departure airport"
+                title="Departure Airport"
                 required
               />
             </div>
@@ -119,6 +125,8 @@ export default function EditFlightPage() {
                 value={formData.arrival_airport}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                placeholder="Enter arrival airport"
+                title="Arrival Airport"
                 required
               />
             </div>
@@ -133,6 +141,8 @@ export default function EditFlightPage() {
                 value={formData.departure_time}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                placeholder="Select departure time"
+                title="Departure Time"
                 required
               />
             </div>
@@ -145,6 +155,8 @@ export default function EditFlightPage() {
                 value={formData.arrival_time}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
+                placeholder="Select arrival time"
+                title="Arrival Time"
                 required
               />
             </div>
@@ -158,6 +170,8 @@ export default function EditFlightPage() {
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
               rows={2}
+              title="Notes"
+              placeholder="Enter any additional notes"
             />
           </div>
 
