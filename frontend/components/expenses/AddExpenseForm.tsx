@@ -6,14 +6,15 @@ import axios from "axios";
 type Props = {
   tripId: number;
   onExpenseAdded: () => void;
+  toggleFormVisibility: () => void;
 };
 
-const AddExpenseForm: React.FC<Props> = ({ tripId, onExpenseAdded }) => {
+const AddExpenseForm: React.FC<Props> = ({ tripId, onExpenseAdded, toggleFormVisibility }) => {
   const [formData, setFormData] = useState({
     title: "",
     amount: "",
     currency: "USD",
-    category: "Food",
+    category: "",
     note: "",
     date: "",
   });
@@ -52,7 +53,7 @@ const AddExpenseForm: React.FC<Props> = ({ tripId, onExpenseAdded }) => {
         title: "",
         amount: "",
         currency: "USD",
-        category: "Food",
+        category: "",
         note: "",
         date: "",
       });
@@ -167,6 +168,13 @@ const AddExpenseForm: React.FC<Props> = ({ tripId, onExpenseAdded }) => {
       >
         {submitting ? "Adding..." : "Add Expense"}
       </button>
+      <button
+          type="button"
+          className="bg-red-600 text-white ml-10 px-4 py-2 rounded hover:bg-red-800 transition"
+          onClick={toggleFormVisibility}
+        >
+          Cancel
+        </button>
     </form>
   );
 };

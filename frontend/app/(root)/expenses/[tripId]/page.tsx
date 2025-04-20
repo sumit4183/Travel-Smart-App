@@ -93,7 +93,13 @@ const TripExpensePage = () => {
     } catch (err) {
       console.error("Failed to refresh expenses:", err);
     }
-  };  
+  }; 
+  
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const toggleFormVisibility = () => {
+    setIsFormVisible(prev => !prev);
+  };
 
   return (
     <div className="min-h-screen bg-white p-6 max-w-5xl mx-auto pt-10">
@@ -122,11 +128,15 @@ const TripExpensePage = () => {
             </div>
           )}
 
+          <button onClick={toggleFormVisibility} className="text-blue-600">+ Add Expense</button>
+
           {/* Placeholder for AddExpenseForm */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-2">Add New Expense</h2>
-            <AddExpenseForm tripId={Number(tripId)} onExpenseAdded={refreshExpenses} />
-          </div>
+          {isFormVisible && (
+            <div className="my-8">
+              <h2 className="text-xl font-semibold mb-2">Add New Expense</h2>
+              <AddExpenseForm tripId={Number(tripId)} onExpenseAdded={refreshExpenses} toggleFormVisibility={toggleFormVisibility} />
+            </div>
+          )}
 
           {/* Placeholder for ExpenseList */}
           <div>

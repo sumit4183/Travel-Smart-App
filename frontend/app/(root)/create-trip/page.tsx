@@ -41,10 +41,10 @@ const CreateTripPage = () => {
         headers: {
           Authorization: `Token ${token}`,
         },
-      });
+      }); 
 
       const newTrip = response.data;
-      router.push(`/expenses/${newTrip.id}`);
+      router.push(`/trips/${newTrip.id}`);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         console.error("Axios error:", err.response?.data || err.message);
