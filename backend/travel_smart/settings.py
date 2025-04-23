@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'flights',
     'travel_alerts',
     'expenses',
+    'hotels',
 ]
 
 MIDDLEWARE = [
