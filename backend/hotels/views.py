@@ -5,6 +5,11 @@ from rest_framework.response import Response
 from .models import HotelSearch, HotelBooking
 from .serializers import HotelSearchSerializer, HotelBookingSerializer
 from .services import AmadeusHotelService
+from django.contrib.auth import get_user_model
+from django.db import IntegrityError
+import uuid
+
+User = get_user_model()
 
 @api_view(['GET'])
 def list_hotels(request):
@@ -104,8 +109,6 @@ def get_offer_details(request, offer_id):
     try:
         hotel_service = AmadeusHotelService()
         offer_data = hotel_service.get_hotel_offer_details(offer_id)
-        
-        # Here you can use the same formatter or create a more detailed one
         return Response({'offer': offer_data})
     
     except Exception as e:
@@ -113,29 +116,54 @@ def get_offer_details(request, offer_id):
 
 @api_view(['POST'])
 def book_hotel(request):
-    """Book a hotel room."""
-    offer_id = request.data.get('offer_id')
-    guests = request.data.get('guests')
-    payments = request.data.get('payments')
-    
-    if not all([offer_id, guests]):
-        return Response(
-            {'error': 'Offer ID and guest information are required'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
+    data = request.data.get('data', {})
+    offer_id = data.get('offerId')
+    guests = data.get('guests')
+    payments = data.get('payments')
+    rooms = data.get("rooms", [])
+
+    if not all([offer_id, guests, payments, rooms]):
+        return Response({'error': 'Offer ID, guest info, payment, and room info are required'}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+
     try:
         hotel_service = AmadeusHotelService()
-        booking_data = hotel_service.book_hotel(
-            offer_id=offer_id,
-            guests=guests,
-            payments=payments
+        booking_data = hotel_service.book_hotel(offer_id, guests, payments, rooms)
+        formatted = hotel_service.format_booking_confirmation(booking_data)
+
+        # Create booking record
+        booking = HotelBooking.objects.create(
+            booking_id=str(uuid.uuid4()),
+            provider_confirmation_id=formatted.get('providerConfirmationId', ''),
+            hotel_id=offer_id,
+            hotel_name=formatted.get('hotel', ''),
+            check_in_date=formatted.get('check_in'),
+            check_out_date=formatted.get('check_out'),
+            number_of_guests=len(guests),
+            room_type=formatted.get('room_type', 'Standard'),
+            total_price=formatted.get('price', {}).get('total', 0),
+            currency=formatted.get('price', {}).get('currency', 'USD'),
+            status=formatted.get('status', 'confirmed'),
+            booking_data=booking_data,
+            user_id=request.user.id if request.user.is_authenticated else None
         )
-        
-        booking_confirmation = hotel_service.format_booking_confirmation(booking_data)
-        return Response({'booking': booking_confirmation})
-    
+
+        # Create guest records
+        for guest in guests:
+            HotelGuest.objects.create(
+                booking=booking,
+                title=guest.get('name', {}).get('title', ''),
+                first_name=guest.get('name', {}).get('firstName', ''),
+                last_name=guest.get('name', {}).get('lastName', ''),
+                email=guest.get('contact', {}).get('email', ''),
+                phone=guest.get('contact', {}).get('phone', ''),
+                is_lead_guest=(guest == guests[0])
+            )
+
+        return Response({'booking': formatted})
+
     except Exception as e:
+        print(f"Error during booking: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @api_view(['GET', 'POST'])

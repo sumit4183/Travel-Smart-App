@@ -148,24 +148,37 @@ class AmadeusHotelService:
         return self.handle_response(response, make_request)
     
     # Step 3: Hotel Booking API
-    def book_hotel(self, offer_id, guests, payments=None):
+    def book_hotel(self, offer_id, guests, payments=None, rooms=None):
         """Book a hotel room using Amadeus Hotel Booking API."""
         def make_request():
             headers = self.get_auth_headers()
             url = 'https://test.api.amadeus.com/v1/booking/hotel-bookings'
             
             # Format the request body according to the API requirements
-            data = {
-                'data': {
-                    'offerId': offer_id,
-                    'guests': guests,
+            payload = {
+                "data": {
+                    "offerId": offer_id,
+                    "guests": guests
                 }
             }
             
             if payments:
-                data['data']['payments'] = payments
+                payload['data']['payments'] = payments
+                
+            if rooms:
+                payload['data']['rooms'] = rooms
+        
+            print(f"Booking API Request URL: {url}")
+            print(f"Booking API Request Headers: {headers}")
+            print(f"Booking API Request Payload: {payload}")
             
-            return requests.post(url, headers=headers, json=data)
+            response = requests.post(url, headers=headers, json=payload)
+            
+            print(f"Booking API Response Status: {response.status_code}")
+            print(f"Booking API Response Headers: {response.headers}")
+            print(f"Booking API Response Content: {response.content}")
+            
+            return response
         
         response = make_request()
         return self.handle_response(response, make_request)
@@ -227,7 +240,12 @@ class AmadeusHotelService:
     
     def format_booking_confirmation(self, api_response):
         """Format the response from Hotel Booking API."""
-        booking_data = api_response.get('data', {})
+        # If api_response is a Response object, extract its data first
+        if hasattr(api_response, 'data'):
+            booking_data = api_response.data
+        else:
+            # Assume it's already a dictionary
+            booking_data = api_response.get('data', {})
         
         return {
             'booking_id': booking_data.get('id'),
