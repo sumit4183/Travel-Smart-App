@@ -26,6 +26,8 @@ class Booking(models.Model):
     booking_reference = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=20, default="confirmed")  # Confirmed, Cancelled, etc.
     created_at = models.DateTimeField(auto_now_add=True)
+    carrier_code = models.CharField(max_length=5, default='AAAA')
+    flight_number = models.CharField(max_length=5)
 
     def __str__(self):
         return f"Booking {self.booking_reference} - {self.user.username}"

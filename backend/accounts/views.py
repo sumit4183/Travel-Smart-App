@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.authtoken.models import Token
 from rest_framework import viewsets
-from .models import TravelPreferences
+from .models import NotificationPreference, TravelPreferences
 from .serializers import TravelPreferencesSerializer
 from django.contrib.auth import authenticate, get_user_model
 from .serializers import CustomUserSerializer
@@ -83,6 +83,7 @@ class UserProfileView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
+        notification_preference = NotificationPreference.objects.get(user=request.user) 
         user_data = {
             "id": user.id,
             "email": user.email,
@@ -90,12 +91,19 @@ class UserProfileView(APIView):
             "last_name": user.last_name,
             "phone_number": user.phone_number,
             "address": user.address,
+            "notification_preference": notification_preference.preference,
         }
         return Response(user_data)
     
     def put(self, request, *args, **kwargs):
         user = request.user
         data = request.data['userDetails']
+        notification_preference = request.data['notification_preference']
+        if notification_preference:
+            NotificationPreference.objects.update_or_create(
+        user=user,
+        defaults={"preference": notification_preference}
+        )
 
         if "email" in data:
             user.email = data["email"]

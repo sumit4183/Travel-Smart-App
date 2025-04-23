@@ -24,3 +24,15 @@ class TravelPreferences(models.Model):
 
     def __str__(self):
         return f"{self.user.email}'s Travel Preferences"
+
+class NotificationPreference(models.Model):
+    NOTIFICATION_TYPES = [
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+    ]
+
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='notification_preference')
+    preference = models.CharField(max_length=10, choices=NOTIFICATION_TYPES, default='email')
+
+    def __str__(self):
+        return f"{self.user.email}'s preference: {self.get_preference_display()}"

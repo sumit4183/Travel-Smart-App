@@ -247,6 +247,8 @@ const PersonalDetails = () => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
   const [addressError, setAddressError] = useState<string | null>(null);
+  const [notificationPreference, setNotificationPreference] =
+    useState<string>("email");
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -263,7 +265,11 @@ const PersonalDetails = () => {
         const response = await axios.get("http://localhost:8000/auth/user/", {
           headers: { Authorization: `Token ${token}` },
         });
-        setUserDetails(response.data);
+        const userData = response.data;
+        const notificationPreference = response.data.notification_preference;
+        setNotificationPreference(notificationPreference);
+        delete userData.notification_preference;
+        setUserDetails(userData);
       } catch (err) {
         setError("Failed to fetch user details.");
       } finally {
@@ -467,17 +473,17 @@ const PersonalDetails = () => {
     const addressError = validateAddress(userDetails?.address || "");
 
     // If any validation fails, do not proceed with saving
-    if (
-      firstNameError ||
-      lastNameError ||
-      emailError ||
-      phoneNumberError ||
-      addressError
-    ) {
-      alert("Validation failed! Please check your inputs and try again.");
-      setIsSaving(false);
-      return;
-    }
+    // if (
+    //   firstNameError ||
+    //   lastNameError ||
+    //   emailError ||
+    //   phoneNumberError ||
+    //   addressError
+    // ) {
+    //   alert("Validation failed! Please check your inputs and try again.");
+    //   setIsSaving(false);
+    //   return;
+    // }
 
     try {
       const token =
@@ -490,7 +496,10 @@ const PersonalDetails = () => {
 
       await axios.put(
         "http://localhost:8000/auth/user/",
-        { userDetails }, // Payload with the updated address
+        {
+          userDetails,
+          notification_preference: notificationPreference,
+        },
         { headers: { Authorization: `Token ${token}` } }
       );
 
@@ -588,6 +597,21 @@ const PersonalDetails = () => {
           {addressError && (
             <p className="text-red-500 text-sm">{addressError}</p>
           )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300">
+            Notification Preference
+          </label>
+          <select
+            className="w-full p-2 border rounded text-black"
+            value={notificationPreference}
+            onChange={(e) =>
+              setNotificationPreference(e.target.value as "email" | "sms")
+            }
+          >
+            <option value="email">Email</option>
+            <option value="sms">SMS</option>
+          </select>
         </div>
         <button
           onClick={handleSave}

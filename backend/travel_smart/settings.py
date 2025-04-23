@@ -15,9 +15,10 @@ from decouple import config
 import dj_database_url
 import os
 
-AMADEUS_API_KEY = config('AMADEUS_API_KEY')
-AMADEUS_API_SECRET = config('AMADEUS_API_SECRET')
-
+# AMADEUS_API_KEY = config('AMADEUS_API_KEY')
+# AMADEUS_API_SECRET = config('AMADEUS_API_SECRET')
+AMADEUS_API_KEY = 'AVrHs9slrkGLxVLX6w678P6a4DxslXws'
+AMADEUS_API_SECRET = 'E9QVFvAk09IGWY21'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,6 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY')
+print(SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     'accounts',
     'settings',
     'flights',
+    'travel_alerts',
 ]
 
 MIDDLEWARE = [
@@ -164,14 +167,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #     }
 # }
 
-DB_URL = 'postgres://travel_admin:travelsmart@localhost:5432/travel_smart'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'travel_smart',
+        'USER': 'travel_admin',
+        'PASSWORD': 'travelsmart',
+        'HOST': 'localhost',
+        'PORT': '5433',
+    }
+}
+
+# DB_URL = 'postgres://travel_admin:travelsmart@localhost:5432/travel_smart'
 
 # Database configuration using dj-database-url
-DATABASES = {
-    'default': dj_database_url.config(
-        default=DB_URL
-    )
-}
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=DB_URL
+#     )
+# }
 
 # Use the custom user model in the accounts app
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -211,9 +225,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'demotsa123@gmail.com'
-EMAIL_HOST_PASSWORD = 'hrei jhqe bsnw limr'
-DEFAULT_FROM_EMAIL = 'demotsa123@gmail.com'
+EMAIL_HOST_USER = 'tsa202599@gmail.com'
+EMAIL_HOST_PASSWORD = 'duny uxfb kigk wewe'
+DEFAULT_FROM_EMAIL = 'tsa202599@gmail.com'
 
 # Password reset link timeout
 PASSWORD_RESET_TIMEOUT = 3600

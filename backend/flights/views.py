@@ -89,6 +89,8 @@ def book_flight(request):
                 arrival_date = flight_offer['itineraries'][0]['segments'][-1]['arrival']['at'].split("T")[0]
                 price = float(flight_offer['price']['grandTotal'])
                 currency = flight_offer['price']['currency']
+                carrier_code = flight_offer['itineraries'][0]['segments'][0]['carrierCode']
+                flight_number = flight_offer['itineraries'][0]['segments'][0]['number']
                 # Save to Booking model
                 try:
                     user = User.objects.get(id=userID)
@@ -102,6 +104,8 @@ def book_flight(request):
                         currency=currency,
                         travelers=traveler,
                         booking_reference=booking_reference,
+                        carrier_code=carrier_code,
+                        flight_number=flight_number,
                         status="confirmed"
                     )
                     print("Booking saved successfully") 
