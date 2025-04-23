@@ -16,7 +16,7 @@ const Navbar = () => {
     { id: "hotels", title: "Hotels", href: "/hotels" },
     { id: "itineraries", title: "Itineraries", href: "/itineraries" },
     { id: "packing-assistant", title: "Packing Assistant", href: "/packing-assistant" },
-    { id: "expense-tracker", title: "Expense Tracker", href: "/expense-tracker" },
+    { id: "expense-tracker", title: "Expense Tracker", href: "/expenses" },
   ];
   
   // Check login status on mount
@@ -74,6 +74,9 @@ const Navbar = () => {
             <>
               <Link href="/profile" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
                 Profile
+              </Link>
+              <Link href="/trips" className="text-white hover:text-gray-300 px-2 py-2 rounded-md text-[18px] font-medium">
+                My Trips
               </Link>
               <button
                 onClick={handleLogout}
@@ -139,6 +142,14 @@ const Navbar = () => {
                     onClick={() => setIsOpen(false)}
                   >
                     Profile
+                  </p>
+                </Link>
+                <Link href="/trips">
+                  <p
+                    className="text-gray-400 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    My Trips
                   </p>
                 </Link>
                 <button
