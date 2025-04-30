@@ -363,60 +363,6 @@ const PersonalDetails = () => {
     return null;
   }
 
-  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const error = validateName(value);
-
-    if (error !== null) {
-      setFirstNameError(error);
-    } else {
-      setFirstNameError(null);
-    }
-
-    if (userDetails) {
-      setUserDetails({
-        ...userDetails,
-        first_name: e.target.value,
-      });
-    }
-  };
-
-  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const error = validateName(value);
-
-    if (error !== null) {
-      setLastNameError(error);
-    } else {
-      setLastNameError(null);
-    }
-
-    if (userDetails) {
-      setUserDetails({
-        ...userDetails,
-        last_name: e.target.value,
-      });
-    }
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const error = validateEmail(value);
-
-    if (error !== null) {
-      setEmailError(error);
-    } else {
-      setEmailError(null);
-    }
-
-    if (userDetails) {
-      setUserDetails({
-        ...userDetails,
-        email: e.target.value,
-      });
-    }
-  };
-
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const error = validatePhoneNumber(value);
@@ -517,7 +463,6 @@ const PersonalDetails = () => {
             placeholder="John"
             value={userDetails?.first_name || ""}
             disabled={true}
-            onChange={handleFirstNameChange}
           />
           {firstNameError && (
             <p className="text-red-500 text-sm">{firstNameError}</p>
@@ -535,7 +480,6 @@ const PersonalDetails = () => {
             placeholder="Doe"
             value={userDetails?.last_name || ""}
             disabled={true}
-            onChange={handleLastNameChange}
           />
           {lastNameError && (
             <p className="text-red-500 text-sm">{lastNameError}</p>
@@ -553,7 +497,6 @@ const PersonalDetails = () => {
             placeholder="example@gmail.com"
             value={userDetails?.email || ""}
             disabled={true}
-            onChange={handleEmailChange}
           />
           {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
         </div>
